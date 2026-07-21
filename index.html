@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8">
@@ -857,33 +857,33 @@
   <div class="app">
     <div class="toolbar">
       <div class="brand">Doroga 2026 Planner</div>
-      <button class="tool-button" id="panBtn" title="Р”РІРёРіР°С‚СЊ СѓРІРµР»РёС‡РµРЅРЅС‹Р№ РґРѕРєСѓРјРµРЅС‚">
+      <button class="tool-button" id="panBtn" title="Двигать увеличенный документ">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11.5V10a2 2 0 0 0-4 0v1"/><path d="M14 10V8a2 2 0 0 0-4 0v4"/><path d="M10 10.5V5.8a2 2 0 0 0-4 0V14"/><path d="M6 13.8 4.8 12.5a2 2 0 0 0-2.9 2.7l4.7 5A5.8 5.8 0 0 0 10.8 22H14a6 6 0 0 0 6-6v-4.5a2 2 0 0 0-4 0V12"/></svg>
-        Р”РІРёРіР°С‚СЊ
+        Двигать
       </button>
-      <button class="tool-button" id="selectBtn" title="Р’С‹Р±РѕСЂ РЅРµСЃРєРѕР»СЊРєРёС… СЏС‡РµРµРє">
+      <button class="tool-button" id="selectBtn" title="Выбор нескольких ячеек">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
-        Р’С‹Р±РѕСЂ
+        Выбор
       </button>
-      <button class="tool-button" id="mergeBtn" title="РћР±СЉРµРґРёРЅРёС‚СЊ РІС‹РґРµР»РµРЅРЅС‹Рµ СЏС‡РµР№РєРё">
+      <button class="tool-button" id="mergeBtn" title="Объединить выделенные ячейки">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 4v16M4 12h16" opacity=".35"/><path d="M8 12h8M12 8v8"/></svg>
-        РћР±СЉРµРґРёРЅРёС‚СЊ
+        Объединить
       </button>
-      <button class="tool-button" id="splitBtn" title="Р Р°Р·СЉРµРґРёРЅРёС‚СЊ РІС‹Р±СЂР°РЅРЅСѓСЋ СЏС‡РµР№РєСѓ">
+      <button class="tool-button" id="splitBtn" title="Разъединить выбранную ячейку">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M8 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3M16 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3"/><path d="M9 12h6M12 9v6"/></svg>
-        Р Р°Р·СЉРµРґРёРЅРёС‚СЊ
+        Разъединить
       </button>
-      <label class="zoom" title="РњР°СЃС€С‚Р°Р± Р»РёСЃС‚Р°">
+      <label class="zoom" title="Масштаб листа">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M10.5 7.5v6M7.5 10.5h6"/></svg>
-        РњР°СЃС€С‚Р°Р± <input id="zoomRange" type="range" min="8" max="80" value="18">
+        Масштаб <input id="zoomRange" type="range" min="8" max="80" value="18">
       </label>
-      <button class="tool-button" id="saveBtn" title="РЎРѕС…СЂР°РЅРёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ">
+      <button class="tool-button" id="saveBtn" title="Сохранить состояние">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 4h12l2 2v14H5z"/><path d="M8 4v6h8V4M8 20v-7h8v7"/></svg>
-        РЎРѕС…СЂР°РЅРёС‚СЊ
+        Сохранить
       </button>
-      <button class="tool-button" id="loadBtn" title="Р—Р°РіСЂСѓР·РёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ">
+      <button class="tool-button" id="loadBtn" title="Загрузить состояние">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
-        Р—Р°РіСЂСѓР·РёС‚СЊ
+        Загрузить
       </button>
       <button class="tool-button primary export-button" id="pdfBtn" title="PDF A3 400dpi">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M8 15h8M8 18h5"/></svg>
@@ -896,10 +896,10 @@
         <section class="sheet" id="sheet" aria-label="A3 planner sheet"></section>
       </div>
     </main>
-    <div class="mobile-zoom" id="mobileZoom" aria-label="РњР°СЃС€С‚Р°Р±">
-      <button class="icon-button" id="zoomOutBtn" title="РЈРјРµРЅСЊС€РёС‚СЊ РјР°СЃС€С‚Р°Р±">-</button>
-      <input id="mobileZoomRange" type="range" min="8" max="80" value="18" title="РњР°СЃС€С‚Р°Р±">
-      <button class="icon-button" id="zoomInBtn" title="РЈРІРµР»РёС‡РёС‚СЊ РјР°СЃС€С‚Р°Р±">+</button>
+    <div class="mobile-zoom" id="mobileZoom" aria-label="Масштаб">
+      <button class="icon-button" id="zoomOutBtn" title="Уменьшить масштаб">-</button>
+      <input id="mobileZoomRange" type="range" min="8" max="80" value="18" title="Масштаб">
+      <button class="icon-button" id="zoomInBtn" title="Увеличить масштаб">+</button>
       <span class="mobile-zoom-value" id="zoomValue">18%</span>
     </div>
   </div>
@@ -907,31 +907,31 @@
   <div class="modal" id="modal" role="dialog" aria-modal="true">
     <div class="editor-panel">
       <div class="editor-head">
-        <div class="editor-title" id="editorTitle">Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ</div>
-        <button class="icon-button" id="closeEditor" title="Р—Р°РєСЂС‹С‚СЊ">Г—</button>
+        <div class="editor-title" id="editorTitle">Редактирование</div>
+        <button class="icon-button" id="closeEditor" title="Закрыть">×</button>
       </div>
       <div class="editor-tools">
         <button class="icon-button" data-font="font-regular" title="Regular"><span class="editor-font-icon regular">R</span></button>
         <button class="icon-button" data-font="font-medium" title="Medium"><span class="editor-font-icon medium">M</span></button>
         <button class="icon-button" data-font="font-bold" title="Bold"><span class="editor-font-icon bold">B</span></button>
         <button class="icon-button" data-italic title="Italic"><span class="editor-font-icon italic">i</span></button>
-        <button class="icon-button" data-cmd="insertUnorderedList" title="РњР°СЂРєРёСЂРѕРІР°РЅРЅС‹Р№ СЃРїРёСЃРѕРє">вЂў</button>
-        <button class="icon-button" data-cmd="insertOrderedList" title="РќСѓРјРµСЂРѕРІР°РЅРЅС‹Р№ СЃРїРёСЃРѕРє">1.</button>
-        <button class="icon-button" data-insert="вЂ“" title="РЎСЂРµРґРЅРµРµ С‚РёСЂРµ">вЂ“</button>
-        <button class="icon-button" data-insert="вЂ”" title="Р”Р»РёРЅРЅРѕРµ С‚РёСЂРµ">вЂ”</button>
-        <button class="icon-button" data-insert="В«В»" title="РљР°РІС‹С‡РєРё РµР»РѕС‡РєРѕР№">В«В»</button>
-        <input id="fontSizeInput" type="number" min="10" max="72" step="1" title="Р Р°Р·РјРµСЂ С€СЂРёС„С‚Р°">
-        <button class="swatch" style="--swatch:#ffffff" data-bg="#ffffff" title="Р‘РµР»С‹Р№"></button>
-        <button class="swatch" style="--swatch:#b8e4e2" data-bg="#b8e4e2" title="Р‘РёСЂСЋР·РѕРІС‹Р№"></button>
-        <button class="swatch" style="--swatch:#f4d8e0" data-bg="#f4d8e0" title="Р РѕР·РѕРІС‹Р№"></button>
-        <button class="swatch" style="--swatch:#ffe2c4" data-bg="#ffe2c4" title="РџРµСЂСЃРёРєРѕРІС‹Р№"></button>
-        <button class="swatch" style="--swatch:#eddfff" data-bg="#eddfff" title="Р¤РёРѕР»РµС‚РѕРІС‹Р№"></button>
-        <button class="swatch" style="--swatch:#7dc8ee" data-bg="#7dc8ee" title="Р“РѕР»СѓР±РѕР№"></button>
+        <button class="icon-button" data-cmd="insertUnorderedList" title="Маркированный список">•</button>
+        <button class="icon-button" data-cmd="insertOrderedList" title="Нумерованный список">1.</button>
+        <button class="icon-button" data-insert="–" title="Среднее тире">–</button>
+        <button class="icon-button" data-insert="—" title="Длинное тире">—</button>
+        <button class="icon-button" data-insert="«»" title="Кавычки елочкой">«»</button>
+        <input id="fontSizeInput" type="number" min="10" max="72" step="1" title="Размер шрифта">
+        <button class="swatch" style="--swatch:#ffffff" data-bg="#ffffff" title="Белый"></button>
+        <button class="swatch" style="--swatch:#b8e4e2" data-bg="#b8e4e2" title="Бирюзовый"></button>
+        <button class="swatch" style="--swatch:#f4d8e0" data-bg="#f4d8e0" title="Розовый"></button>
+        <button class="swatch" style="--swatch:#ffe2c4" data-bg="#ffe2c4" title="Персиковый"></button>
+        <button class="swatch" style="--swatch:#eddfff" data-bg="#eddfff" title="Фиолетовый"></button>
+        <button class="swatch" style="--swatch:#7dc8ee" data-bg="#7dc8ee" title="Голубой"></button>
       </div>
       <div class="editor-area" id="editorArea" contenteditable="true"></div>
       <div class="editor-actions">
-        <button class="tool-button" id="cancelEditor">РћС‚РјРµРЅР°</button>
-        <button class="tool-button primary" id="applyEditor">РџСЂРёРјРµРЅРёС‚СЊ</button>
+        <button class="tool-button" id="cancelEditor">Отмена</button>
+        <button class="tool-button primary" id="applyEditor">Применить</button>
       </div>
     </div>
   </div>
@@ -967,19 +967,19 @@
     };
 
     const timeLabels = [
-      "09:00 вЂ“\n09:30", "09:30 вЂ“\n10:00", "10:00 вЂ“\n10:30", "10:30 вЂ“\n11:00",
-      "11:00 вЂ“\n11:30", "11:30 вЂ“\n12:00", "12:00 вЂ“\n12:30", "12:30 вЂ“\n13:00",
-      "13:00 вЂ“\n13:30", "13:30 вЂ“\n14:00", "14:00 вЂ“\n14:30", "14:30 вЂ“\n15:00",
-      "15:00 вЂ“\n15:30", "15:30 вЂ“\n16:00", "16:00 вЂ“\n16:30", "16:30 вЂ“\n17:00",
-      "17:00 вЂ“\n17:30", "17:30 вЂ“\n18:00", "18:00 вЂ“\n18:30", "18:30 вЂ“\n19:00",
-      "19:00 вЂ“\n19:30"
+      "09:00 –\n09:30", "09:30 –\n10:00", "10:00 –\n10:30", "10:30 –\n11:00",
+      "11:00 –\n11:30", "11:30 –\n12:00", "12:00 –\n12:30", "12:30 –\n13:00",
+      "13:00 –\n13:30", "13:30 –\n14:00", "14:00 –\n14:30", "14:30 –\n15:00",
+      "15:00 –\n15:30", "15:30 –\n16:00", "16:00 –\n16:30", "16:30 –\n17:00",
+      "17:00 –\n17:30", "17:30 –\n18:00", "18:00 –\n18:30", "18:30 –\n19:00",
+      "19:00 –\n19:30"
     ];
 
     const sections = [
-      { id: "s0", headerY: 167, bodyY: 285, stripeY: 285, stripeH: 310, date: "13 РѕРєС‚СЏР±СЂСЏ\nРІС‚РѕСЂРЅРёРє", rowHeights: [310], venue: ["Р’С‹СЃС‚Р°РІРѕС‡РЅС‹Р№\nРїР°РІРёР»СЊРѕРЅ"] },
-      { id: "s1", headerY: 606, bodyY: 726, stripeY: 726, stripeH: 805, date: "13 РѕРєС‚СЏР±СЂСЏ\nРІС‚РѕСЂРЅРёРє", rowHeights: Array(8).fill(91), venue: ["Р’С‹СЃС‚Р°РІРѕС‡РЅС‹Р№\nРїР°РІРёР»СЊРѕРЅ", "РџСЂРµСЃСЃ-Р¦РµРЅС‚СЂ", "Р—Р°Р» РљСЂР°СЃРЅРѕРґР°СЂ\n(380С‡РµР»)", "Р—Р°Р» РЎРѕС‡Рё\n(150 С‡РµР»)", "Р—Р°Р» РђРЅР°РїР°\n(150 С‡РµР»)", "Р—Р°Р» РЎРёСЂРёСѓСЃ\n(РєСЂСѓРіР»С‹Р№ СЃС‚РѕР» 60 С‡РµР»)", "Р—Р°Р» Р”Р°РіРѕРјС‹СЃ\n(70 С‡РµР»)", ""] },
-      { id: "s2", headerY: 1542, bodyY: 1662, stripeY: 1662, stripeH: 805, date: "14 РѕРєС‚СЏР±СЂСЏ\nСЃСЂРµРґР°", rowHeights: Array(8).fill(91), venue: ["Р’С‹СЃС‚Р°РІРѕС‡РЅС‹Р№\nРїР°РІРёР»СЊРѕРЅ", "РџСЂРµСЃСЃ-Р¦РµРЅС‚СЂ", "Р—Р°Р» РљСЂР°СЃРЅРѕРґР°СЂ\n(380С‡РµР»)", "Р—Р°Р» РЎРѕС‡Рё\n(150 С‡РµР»)", "Р—Р°Р» РђРЅР°РїР°\n(150 С‡РµР»)", "Р—Р°Р» РЎРёСЂРёСѓСЃ\n(РєСЂСѓРіР»С‹Р№ СЃС‚РѕР» 60 С‡РµР»)", "Р—Р°Р» Р”Р°РіРѕРјС‹СЃ\n(70 С‡РµР»)", ""] },
-      { id: "s3", headerY: 2478, bodyY: 2598, stripeY: 2598, stripeH: 703, date: "15 РѕРєС‚СЏР±СЂСЏ\nС‡РµС‚РІРµСЂРі", rowHeights: Array(7).fill(91), venue: ["Р’С‹СЃС‚Р°РІРѕС‡РЅС‹Р№\nРїР°РІРёР»СЊРѕРЅ", "РџСЂРµСЃСЃ-Р¦РµРЅС‚СЂ", "Р—Р°Р» РљСЂР°СЃРЅРѕРґР°СЂ\n(380С‡РµР»)", "Р—Р°Р» РЎРѕС‡Рё\n(150 С‡РµР»)", "Р—Р°Р» РђРЅР°РїР°\n(150 С‡РµР»)", "Р—Р°Р» РЎРёСЂРёСѓСЃ\n(РєСЂСѓРіР»С‹Р№ СЃС‚РѕР» 60 С‡РµР»)", "Р—Р°Р» Р”Р°РіРѕРјС‹СЃ\n(70 С‡РµР»)"] }
+      { id: "s0", headerY: 167, bodyY: 285, stripeY: 285, stripeH: 310, date: "13 октября\nвторник", rowHeights: [310], venue: ["Выставочный\nпавильон"] },
+      { id: "s1", headerY: 606, bodyY: 726, stripeY: 726, stripeH: 805, date: "13 октября\nвторник", rowHeights: Array(8).fill(91), venue: ["Выставочный\nпавильон", "Пресс-Центр", "Зал Краснодар\n(380чел)", "Зал Сочи\n(150 чел)", "Зал Анапа\n(150 чел)", "Зал Сириус\n(круглый стол 60 чел)", "Зал Дагомыс\n(70 чел)", ""] },
+      { id: "s2", headerY: 1542, bodyY: 1662, stripeY: 1662, stripeH: 805, date: "14 октября\nсреда", rowHeights: Array(8).fill(91), venue: ["Выставочный\nпавильон", "Пресс-Центр", "Зал Краснодар\n(380чел)", "Зал Сочи\n(150 чел)", "Зал Анапа\n(150 чел)", "Зал Сириус\n(круглый стол 60 чел)", "Зал Дагомыс\n(70 чел)", ""] },
+      { id: "s3", headerY: 2478, bodyY: 2598, stripeY: 2598, stripeH: 703, date: "15 октября\nчетверг", rowHeights: Array(7).fill(91), venue: ["Выставочный\nпавильон", "Пресс-Центр", "Зал Краснодар\n(380чел)", "Зал Сочи\n(150 чел)", "Зал Анапа\n(150 чел)", "Зал Сириус\n(круглый стол 60 чел)", "Зал Дагомыс\n(70 чел)"] }
     ];
 
     const state = {
@@ -1120,11 +1120,11 @@
       for (const node of nodes) {
         let text = node.nodeValue;
         text = text.replace(/(\d)\s*%/g, "$1 %");
-        text = text.replace(/(^|[\s([{])--(?=\s|$)/g, "$1вЂ”");
-        text = text.replace(/(\s)-(\s)/g, "$1вЂ“$2");
-        text = text.replace(/"([^"]*)"/g, "В«$1В»");
+        text = text.replace(/(^|[\s([{])--(?=\s|$)/g, "$1—");
+        text = text.replace(/(\s)-(\s)/g, "$1–$2");
+        text = text.replace(/"([^"]*)"/g, "«$1»");
         text = text.replace(/"/g, () => {
-          const q = quoteOpen ? "В«" : "В»";
+          const q = quoteOpen ? "«" : "»";
           quoteOpen = !quoteOpen;
           return q;
         });
@@ -1184,7 +1184,7 @@
       holder.innerHTML = html;
       const walker = document.createTreeWalker(holder, NodeFilter.SHOW_TEXT);
       while (walker.nextNode()) {
-        walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(/(В»\.)\s*(13[вЂ“-]15)/g, "$1\u00a0$2");
+        walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(/(»\.)\s*(13[–-]15)/g, "$1\u00a0$2");
       }
       return holder.innerHTML;
     }
@@ -1308,13 +1308,13 @@
         .replace(/[ \t]*\n[ \t]*/g, "\n")
         .replace(/\n{2,}/g, "\n")
         .trim();
-      text = text.replace(/^Р’С‹СЃС‚Р°РІРѕС‡РЅС‹Р№\s+РїР°РІРёР»СЊРѕРЅ$/i, "Р’С‹СЃС‚Р°РІРѕС‡РЅС‹Р№\nРїР°РІРёР»СЊРѕРЅ");
-      text = text.replace(/^(Р—Р°Р»\s+[^\n(]+)\s+(\([^)]*\))$/i, "$1\n$2");
-      text = text.replace(/^(Р—Р°Р»\s+РљСЂР°СЃРЅРѕРґР°СЂ)\s*(\([^)]*\))$/i, "$1\n$2");
-      text = text.replace(/^(Р—Р°Р»\s+РЎРѕС‡Рё)\s*(\([^)]*\))$/i, "$1\n$2");
-      text = text.replace(/^(Р—Р°Р»\s+РђРЅР°РїР°)\s*(\([^)]*\))$/i, "$1\n$2");
-      text = text.replace(/^(Р—Р°Р»\s+РЎРёСЂРёСѓСЃ)\s*(\([^)]*\))$/i, "$1\n$2");
-      text = text.replace(/^(Р—Р°Р»\s+Р”Р°РіРѕРјС‹СЃ)\s*(\([^)]*\))$/i, "$1\n$2");
+      text = text.replace(/^Выставочный\s+павильон$/i, "Выставочный\nпавильон");
+      text = text.replace(/^(Зал\s+[^\n(]+)\s+(\([^)]*\))$/i, "$1\n$2");
+      text = text.replace(/^(Зал\s+Краснодар)\s*(\([^)]*\))$/i, "$1\n$2");
+      text = text.replace(/^(Зал\s+Сочи)\s*(\([^)]*\))$/i, "$1\n$2");
+      text = text.replace(/^(Зал\s+Анапа)\s*(\([^)]*\))$/i, "$1\n$2");
+      text = text.replace(/^(Зал\s+Сириус)\s*(\([^)]*\))$/i, "$1\n$2");
+      text = text.replace(/^(Зал\s+Дагомыс)\s*(\([^)]*\))$/i, "$1\n$2");
       const lines = text.split("\n");
       const lastLine = lines.at(-1) || "";
       if (lines.length > 1 && /^\([^)]*\)$/.test(lastLine)) {
@@ -1667,7 +1667,7 @@
       const el = document.createElement("div");
       el.className = "venue";
       el.dataset.id = id;
-      el.dataset.label = "РњРµСЃС‚Рѕ РїСЂРѕРІРµРґРµРЅРёСЏ";
+      el.dataset.label = "Место проведения";
       const y = yForRow(section, row);
       styleBox(el, VENUE_X, y + 0.1, VENUE_W, section.rowHeights[row]);
       el.style.fontSize = `${state.groupFontSize.venues || state.fontSize[id] || 30}px`;
@@ -1683,8 +1683,8 @@
       const bar = document.createElement("div");
       bar.className = "header-bar";
       sheet.appendChild(bar);
-      makeEditable("projectTitle", "РџСЂРѕРµРєС‚", 53, 0, 359, 164, "title-project", "РџСЂРѕРµРєС‚\nРЅР° 21.07.2026 Рі.", 31);
-      makeEditable("mainTitle", "Р—Р°РіРѕР»РѕРІРѕРє", 615, 0, 3931, 164, "title-main", "Р“Р РђР¤РРљ РњР•Р РћРџР РРЇРўРР™ РҐII РњР•Р–Р”РЈРќРђР РћР”РќРћР™ РЎРџР•Р¦РРђР›РР—РР РћР’РђРќРќРћР™ Р’Р«РЎРўРђР’РљР В«Р”РћР РћР“Рђ 2026В».&nbsp;13вЂ“15 РѕРєС‚СЏР±СЂСЏ 2026 РіРѕРґР°", 58);
+      makeEditable("projectTitle", "Проект", 53, 0, 359, 164, "title-project", "Проект\nна 21.07.2026 г.", 31);
+      makeEditable("mainTitle", "Заголовок", 615, 0, 3931, 164, "title-main", "ГРАФИК МЕРОПРИЯТИЙ ХII МЕЖДУНАРОДНОЙ СПЕЦИАЛИЗИРОВАННОЙ ВЫСТАВКИ «ДОРОГА 2026».&nbsp;13–15 октября 2026 года", 58);
       [
         { x: 2875, y: 0, w: 83, h: 46, opacity: .24, flip: false },
         { x: 4696, y: 64, w: 187, h: 103, opacity: .46, flip: false },
@@ -1728,12 +1728,12 @@
       header.className = "time-header";
       header.style.top = `${section.headerY}px`;
       sheet.appendChild(header);
-      makeEditable(`${section.id}-timeLabel`, "РњРµСЃС‚Рѕ РїСЂРѕРІРµРґРµРЅРёСЏ / Р’СЂРµРјСЏ", 53, section.headerY, 323, 109, "time-label", "РњРµСЃС‚Рѕ РїСЂРѕРІРµРґРµРЅРёСЏ / Р’СЂРµРјСЏ", 31);
+      makeEditable(`${section.id}-timeLabel`, "Место проведения / Время", 53, section.headerY, 323, 109, "time-label", "Место проведения / Время", 31);
       timeLabels.forEach((label, col) => {
         const el = document.createElement("div");
         el.className = "time-cell";
         el.dataset.id = `${section.id}-time-${col}`;
-        el.dataset.label = "Р’СЂРµРјСЏ";
+        el.dataset.label = "Время";
         styleBox(el, xForCol(col), section.headerY, state.colWidths[col], 109);
         el.style.fontSize = `${state.groupFontSize.timeCells || state.fontSize[el.dataset.id] || 31}px`;
         el.innerHTML = flowHtml(state.text[el.dataset.id] ?? htmlEscape(label));
@@ -1750,7 +1750,7 @@
       const stripe = document.createElement("div");
       stripe.className = "date-stripe";
       stripe.dataset.id = `${section.id}-date`;
-      stripe.dataset.label = "Р”Р°С‚Р°";
+      stripe.dataset.label = "Дата";
       styleBox(stripe, 0, section.stripeY, 135, section.stripeH);
       stripe.style.fontSize = `${state.fontSize[stripe.dataset.id] || 44}px`;
       stripe.innerHTML = state.text[stripe.dataset.id] ?? dateMarkup(section.date);
@@ -1776,12 +1776,27 @@
         sheet.appendChild(handle);
       }
 
+      const sectionIndex = sections.indexOf(section);
+      if (sectionIndex > 0) {
+        const topHandle = document.createElement("div");
+        topHandle.className = "resize-row";
+        topHandle.dataset.section = section.id;
+        topHandle.dataset.row = 0;
+        topHandle.dataset.edge = "section-boundary";
+        topHandle.dataset.boundarySection = section.id;
+        styleBox(topHandle, TABLE_X, section.bodyY - GAP_Y / 2, TABLE_W, 18);
+        topHandle.addEventListener("pointerdown", startRowResize);
+        sheet.appendChild(topHandle);
+      }
+
       for (let row = 0; row < section.rowHeights.length; row++) {
         const handle = document.createElement("div");
         handle.className = "resize-row";
         handle.dataset.section = section.id;
         handle.dataset.row = row;
-        handle.dataset.edge = row === section.rowHeights.length - 1 ? "bottom" : "between";
+        const nextSection = sections[sectionIndex + 1];
+        handle.dataset.edge = row === section.rowHeights.length - 1 && nextSection ? "section-boundary" : row === section.rowHeights.length - 1 ? "bottom" : "between";
+        if (row === section.rowHeights.length - 1 && nextSection) handle.dataset.boundarySection = nextSection.id;
         styleBox(handle, TABLE_X, yForRow(section, row) + section.rowHeights[row] + GAP_Y / 2, TABLE_W, 18);
         handle.addEventListener("pointerdown", startRowResize);
         sheet.appendChild(handle);
@@ -1789,17 +1804,17 @@
     }
 
     function renderLegend() {
-      makeEditable("legendTitle", "Р¦РІРµС‚РѕРІР°СЏ РєР»Р°СЃСЃРёС„РёРєР°С†РёСЏ РјРµСЂРѕРїСЂРёСЏС‚РёР№", 142, LEGEND_TITLE_Y, 270, 109, "legend-title", "Р¦РІРµС‚РѕРІР°СЏ РєР»Р°СЃСЃРёС„РёРєР°С†РёСЏ РјРµСЂРѕРїСЂРёСЏС‚РёР№", 31);
+      makeEditable("legendTitle", "Цветовая классификация мероприятий", 142, LEGEND_TITLE_Y, 270, 109, "legend-title", "Цветовая классификация мероприятий", 31);
       [
-        ["legend-mint", 421, 1061, colors.mint, "РњРµСЂРѕРїСЂРёСЏС‚РёСЏ СЃС‚СЂСѓРєС‚СѓСЂРЅС‹С… РїРѕРґСЂР°Р·РґРµР»РµРЅРёР№ С„РµРґРµСЂР°Р»СЊРЅРѕРіРѕ РґРѕСЂРѕР¶РЅРѕРіРѕ Р°РіРµРЅС‚СЃС‚РІР°, РїРѕРґРІРµРґРѕРјСЃС‚РІРµРЅРЅС‹С… СѓС‡СЂРµР¶РґРµРЅРёР№"],
-        ["legend-rose", 1492, 633, colors.rose, "РњРµСЂРѕРїСЂРёСЏС‚РёСЏ СЃ СѓС‡Р°СЃС‚РёРµРј РїРѕС‡РµС‚РЅС‹С… РіРѕСЃС‚РµР№"],
-        ["legend-peach", 2133, 420, colors.peach, "РћР±С…РѕРґ РІС‹СЃС‚Р°РІРєРё"],
-        ["legend-violet", 2561, 420, colors.violet, "РРЅС‹Рµ РјРµСЂРѕРїСЂРёСЏС‚РёСЏ"]
+        ["legend-mint", 421, 1061, colors.mint, "Мероприятия структурных подразделений федерального дорожного агентства, подведомственных учреждений"],
+        ["legend-rose", 1492, 633, colors.rose, "Мероприятия с участием почетных гостей"],
+        ["legend-peach", 2133, 420, colors.peach, "Обход выставки"],
+        ["legend-violet", 2561, 420, colors.violet, "Иные мероприятия"]
       ].forEach(([id, x, w, bg, text]) => {
         const el = document.createElement("div");
         el.className = "legend-chip";
         el.dataset.id = id;
-        el.dataset.label = "РЈСЃР»РѕРІРЅРѕРµ РѕР±РѕР·РЅР°С‡РµРЅРёРµ";
+        el.dataset.label = "Условное обозначение";
         styleBox(el, x, LEGEND_CHIP_Y, w, 91);
         el.style.background = bg;
         el.style.fontSize = `${state.fontSize[id] || 30}px`;
@@ -1826,7 +1841,7 @@
     function openEditor(el) {
       activeTarget = el;
       savedEditorRange = null;
-      editorTitle.textContent = el.dataset.label || el.dataset.id || "Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ";
+      editorTitle.textContent = el.dataset.label || el.dataset.id || "Редактирование";
       editorArea.innerHTML = editorHtmlFromElement(el);
       fontSizeInput.value = elementFontSize(el, parseInt(el.style.fontSize, 10) || 24);
       modal.classList.add("open");
@@ -1862,10 +1877,10 @@
       }
       if (activeTarget.classList.contains("time-cell")) {
         syncFontSizeGroup("timeCells", fontSize);
-        setStatus("Р Р°Р·РјРµСЂ РІСЂРµРјРµРЅРё РѕР±РЅРѕРІР»РµРЅ РІРѕ РІСЃРµС… С€Р°РїРєР°С…");
+        setStatus("Размер времени обновлен во всех шапках");
       } else if (activeTarget.classList.contains("venue")) {
         syncFontSizeGroup("venues", fontSize);
-        setStatus("Р Р°Р·РјРµСЂ РјРµСЃС‚ РїСЂРѕРІРµРґРµРЅРёСЏ РѕР±РЅРѕРІР»РµРЅ РІРµР·РґРµ");
+        setStatus("Размер мест проведения обновлен везде");
       } else {
         state.fontSize[id] = fontSize;
       }
@@ -1873,7 +1888,7 @@
       render();
       if (shouldAutoFitCell) {
         if (autoFitFilledCells()) render();
-        setStatus("Р Р‡РЎвЂЎР ВµР в„–Р С”Р В° Р С—Р С•Р Т‘РЎРѓРЎвЂљРЎР‚Р С•Р ВµР Р…Р В° Р С—Р С•Р Т‘ РЎвЂљР ВµР С”РЎРѓРЎвЂљ");
+        setStatus("РЇС‡РµР№РєР° РїРѕРґСЃС‚СЂРѕРµРЅР° РїРѕРґ С‚РµРєСЃС‚");
       }
     }
 
@@ -1888,19 +1903,19 @@
 
     function mergeSelected() {
       const ids = activeCellIds();
-      if (ids.length < 2) return setStatus("Р’С‹Р±РµСЂРёС‚Рµ РЅРµСЃРєРѕР»СЊРєРѕ СЏС‡РµРµРє");
+      if (ids.length < 2) return setStatus("Выберите несколько ячеек");
       const parts = ids.map(id => {
         const [section, row, col] = id.split("-");
         return { id, section, row: Number(row), col: Number(col) };
       });
       const section = parts[0].section;
-      if (!parts.every(p => p.section === section)) return setStatus("РћР±СЉРµРґРёРЅРµРЅРёРµ С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё РѕРґРЅРѕРіРѕ Р±Р»РѕРєР°");
+      if (!parts.every(p => p.section === section)) return setStatus("Объединение только внутри одного блока");
       const minRow = Math.min(...parts.map(p => p.row));
       const maxRow = Math.max(...parts.map(p => p.row));
       const minCol = Math.min(...parts.map(p => p.col));
       const maxCol = Math.max(...parts.map(p => p.col));
       const expected = (maxRow - minRow + 1) * (maxCol - minCol + 1);
-      if (expected !== parts.length) return setStatus("РќСѓР¶РЅРѕ РІС‹РґРµР»РёС‚СЊ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє СЏС‡РµРµРє");
+      if (expected !== parts.length) return setStatus("Нужно выделить прямоугольник ячеек");
       const master = `${section}-${minRow}-${minCol}`;
       const html = parts.map(p => state.cells[p.id]).filter(Boolean).join("<br>");
       const bg = parts.map(p => meaningfulBg(state.bg[p.id])).find(Boolean);
@@ -1911,7 +1926,7 @@
         if (p.id !== master) state.hidden[p.id] = master;
       }
       selected.clear();
-      setStatus("РЇС‡РµР№РєРё РѕР±СЉРµРґРёРЅРµРЅС‹");
+      setStatus("Ячейки объединены");
       render();
       if (autoFitFilledCells()) render();
     }
@@ -1919,7 +1934,7 @@
     function splitSelected() {
       const ids = activeCellIds();
       const id = ids[0];
-      if (!id || !state.merged[id]) return setStatus("Р’С‹Р±РµСЂРёС‚Рµ РѕР±СЉРµРґРёРЅРµРЅРЅСѓСЋ СЏС‡РµР№РєСѓ");
+      if (!id || !state.merged[id]) return setStatus("Выберите объединенную ячейку");
       const merge = state.merged[id];
       const [section, row, col] = id.split("-");
       for (let r = Number(row); r < Number(row) + merge.rows; r++) {
@@ -1929,7 +1944,7 @@
       }
       delete state.merged[id];
       selected.clear();
-      setStatus("РЇС‡РµР№РєР° СЂР°Р·СЉРµРґРёРЅРµРЅР°");
+      setStatus("Ячейка разъединена");
       render();
       if (autoFitFilledCells()) render();
     }
@@ -1967,19 +1982,65 @@
       const section = sections.find(s => s.id === event.currentTarget.dataset.section);
       const row = Number(event.currentTarget.dataset.row);
       const startY = event.clientY;
+      const startHeights = section.rowHeights.slice();
       const startTop = section.rowHeights[row];
       const edge = event.currentTarget.dataset.edge;
       const startBottom = section.rowHeights[row + 1];
       const scale = Number(getComputedStyle(document.documentElement).getPropertyValue("--scale")) || 1;
-      const startTableBottom = tableBottomY();
+      const boundarySection = sections.find(s => s.id === event.currentTarget.dataset.boundarySection);
+      const boundaryIndex = boundarySection ? sections.indexOf(boundarySection) : -1;
+      const boundaryPrev = boundaryIndex > 0 ? sections[boundaryIndex - 1] : null;
+      const boundaryCurr = boundaryIndex > 0 ? sections[boundaryIndex] : null;
+      const boundaryPrevHeights = boundaryPrev?.rowHeights.slice() || [];
+      const boundaryCurrHeights = boundaryCurr?.rowHeights.slice() || [];
+      const resizeBoundaryRow = (delta, donorIndexes) => {
+        if (!donorIndexes.length) return false;
+        const targetSpare = Math.max(0, startHeights[row] - MIN_ROW);
+        const donorSpare = donorIndexes.reduce((total, index) => total + Math.max(0, startHeights[index] - MIN_ROW), 0);
+        let applied = delta;
+        if (applied > 0) applied = Math.min(applied, donorSpare);
+        if (applied < 0) applied = -Math.min(-applied, targetSpare);
+        if (Math.abs(applied) <= .5) return false;
+
+        const nextHeights = startHeights.slice();
+        nextHeights[row] = startHeights[row] + applied;
+        const donorDelta = -applied;
+        if (donorDelta > 0) {
+          const donorTotal = donorIndexes.reduce((total, index) => total + startHeights[index], 0) || donorIndexes.length;
+          donorIndexes.forEach(index => {
+            nextHeights[index] = startHeights[index] + donorDelta * (startHeights[index] / donorTotal || 1 / donorIndexes.length);
+          });
+        } else {
+          const spare = donorSpare || donorIndexes.length;
+          donorIndexes.forEach(index => {
+            const rowSpare = Math.max(0, startHeights[index] - MIN_ROW);
+            nextHeights[index] = startHeights[index] + donorDelta * (rowSpare / spare || 1 / donorIndexes.length);
+          });
+        }
+        section.rowHeights = nextHeights.map(height => Math.max(MIN_ROW, height));
+        return true;
+      };
       const move = e => {
         const dy = (e.clientY - startY) / scale;
+        if (edge === "section-boundary" && boundaryPrev && boundaryCurr) {
+          const prevLast = boundaryPrevHeights.length - 1;
+          const maxDown = Math.max(0, boundaryCurrHeights[0] - MIN_ROW);
+          const maxUp = Math.max(0, boundaryPrevHeights[prevLast] - MIN_ROW);
+          const applied = Math.max(-maxUp, Math.min(maxDown, dy));
+          boundaryPrev.rowHeights = boundaryPrevHeights.slice();
+          boundaryCurr.rowHeights = boundaryCurrHeights.slice();
+          boundaryPrev.rowHeights[prevLast] = boundaryPrevHeights[prevLast] + applied;
+          boundaryCurr.rowHeights[0] = boundaryCurrHeights[0] - applied;
+          render();
+          return;
+        }
+        if (edge === "top") {
+          resizeBoundaryRow(dy, section.rowHeights.map((_, index) => index).filter(index => index > row));
+          render();
+          return;
+        }
         if (edge === "bottom") {
-          let next = Math.max(MIN_ROW, startTop + dy);
-          const delta = next - startTop;
-          const maxDelta = Math.max(0, TABLE_BOTTOM_LIMIT - startTableBottom);
-          if (delta > maxDelta) next = startTop + maxDelta;
-          section.rowHeights[row] = next;
+          resizeBoundaryRow(dy, section.rowHeights.map((_, index) => index).filter(index => index < row));
           render();
           return;
         }
@@ -2162,7 +2223,7 @@
     }
 
     async function exportPdf() {
-      setStatus("Р РµРЅРґРµСЂ PDF...");
+      setStatus("Рендер PDF...");
       selected.clear();
       render();
       const oldScale = state.zoom;
@@ -2189,10 +2250,10 @@
         });
         pdf.addImage(img, "PNG", 0, 0, 420, 297, undefined, "FAST");
         pdf.save("Doroga-2026-Planner-A3-400dpi.pdf");
-        setStatus("PDF РіРѕС‚РѕРІ");
+        setStatus("PDF готов");
       } catch (error) {
         console.error(error);
-        setStatus("РћС€РёР±РєР° PDF");
+        setStatus("Ошибка PDF");
       } finally {
         sheet.classList.remove("exporting");
         setZoom(oldScale);
@@ -2226,9 +2287,9 @@
           setZoom(state.zoom);
           render();
           if (autoFitFilledCells()) render();
-          setStatus("РЎРѕСЃС‚РѕСЏРЅРёРµ Р·Р°РіСЂСѓР¶РµРЅРѕ");
+          setStatus("Состояние загружено");
         } catch (error) {
-          setStatus("JSON РЅРµ РїСЂРѕС‡РёС‚Р°РЅ");
+          setStatus("JSON не прочитан");
         }
       };
       reader.readAsText(file);
@@ -2265,7 +2326,7 @@
       button.addEventListener("click", () => {
         editorArea.focus();
         restoreEditorSelection();
-        const value = button.dataset.insert === "В«В»" ? "В«В»" : button.dataset.insert;
+        const value = button.dataset.insert === "«»" ? "«»" : button.dataset.insert;
         document.execCommand("insertText", false, value);
         saveEditorSelection();
       });
@@ -2353,4 +2414,3 @@
   </script>
 </body>
 </html>
-
