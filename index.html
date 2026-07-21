@@ -1820,6 +1820,8 @@
       selected.clear();
       setStatus("Ячейки объединены");
       render();
+      if (autoFitCell(master)) render();
+      if (autoFitFilledCells()) render();
     }
 
     function splitSelected() {
@@ -1837,6 +1839,7 @@
       selected.clear();
       setStatus("Ячейка разъединена");
       render();
+      if (autoFitFilledCells()) render();
     }
 
     function startColResize(event) {
