@@ -468,10 +468,10 @@
       border: 2px solid var(--blue-soft);
       background: #ffffff;
       color: #111827;
-      padding: 10px 12px;
+      padding: 12px 12px 16px;
       font-family: "PF Din Text Comp Pro", Arial, sans-serif;
       font-size: 24px;
-      line-height: 1.08;
+      line-height: 1.12;
       font-synthesis: none;
       display: flex;
       align-items: center;
@@ -949,6 +949,7 @@
     const GAP_Y = 11;
     const MIN_COL = 110;
     const MIN_ROW = 48;
+    const CELL_HEIGHT_BUFFER = 16;
     const A3_400_SCALE = 400 / 300;
 
     const colors = {
@@ -1401,7 +1402,7 @@
         const cellCols = rangeIndexes(Number(cell.dataset.col), merge.cols);
         const width = sumByIndexes(state.colWidths, cellCols) + GAP_X * (merge.cols - 1);
         const measured = measureCellContent(cell, width);
-        required = Math.max(required, measured.height + 4 - GAP_Y * (merge.rows - 1));
+        required = Math.max(required, measured.height + CELL_HEIGHT_BUFFER - GAP_Y * (merge.rows - 1));
       });
       return required;
     }
@@ -1451,7 +1452,7 @@
       const rowGaps = GAP_Y * (merge.rows - 1);
       const desiredRowTotal = Math.max(
         MIN_ROW * merge.rows,
-        measured.height + 4 - rowGaps,
+        measured.height + CELL_HEIGHT_BUFFER - rowGaps,
         requiredHeightForRows(parsed.section, rowIndexes)
       );
       const heightIncrease = Math.max(0, desiredRowTotal - currentRowTotal);
