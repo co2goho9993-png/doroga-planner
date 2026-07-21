@@ -1,0 +1,1805 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Doroga 2026 Planner</title>
+  <script src="./vendor/html2canvas.min.js"></script>
+  <script src="./vendor/jspdf.umd.min.js"></script>
+  <style>
+    @font-face {
+      font-family: "ALS Granate";
+      src: url("./fonts/ALS_Granate_Light_1.1.otf") format("opentype");
+      font-weight: 300;
+    }
+    @font-face {
+      font-family: "ALS Granate Light";
+      src: url("./fonts/ALS_Granate_Light_1.1.otf") format("opentype");
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: "ALS Granate";
+      src: url("./fonts/ALS_Granate_Regular_1.1.otf") format("opentype");
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: "ALS Granate Regular";
+      src: url("./fonts/ALS_Granate_Regular_1.1.otf") format("opentype");
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: "ALS Granate";
+      src: url("./fonts/ALS_Granate_Bold_1.1.otf") format("opentype");
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: "ALS Granate Bold";
+      src: url("./fonts/ALS_Granate_Bold_1.1.otf") format("opentype");
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: "PF Din Text Comp Pro";
+      src: url("./fonts/PFDinTextCompPro-Medium.ttf") format("truetype");
+      font-weight: 500;
+    }
+    @font-face {
+      font-family: "PF Din Text Comp Pro Medium";
+      src: url("./fonts/PFDinTextCompPro-Medium.ttf") format("truetype");
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: "PF Din Text Comp Pro";
+      src: url("./fonts/PFDinTextCompPro-Regular.ttf") format("truetype");
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: "PF Din Text Comp Pro Regular";
+      src: url("./fonts/PFDinTextCompPro-Regular.ttf") format("truetype");
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: "PF Din Text Comp Pro";
+      src: url("./fonts/PFDinTextCompPro-Bold.ttf") format("truetype");
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: "PF Din Text Comp Pro Bold";
+      src: url("./fonts/PFDinTextCompPro-Bold.ttf") format("truetype");
+      font-weight: 400;
+    }
+
+    :root {
+      --sheet-w: 4961px;
+      --sheet-h: 3508px;
+      --blue: #234497;
+      --blue-soft: #cad1e3;
+      --hall: #7dc8ee;
+      --mint: #b8e4e2;
+      --rose: #f4d8e0;
+      --peach: #ffe2c4;
+      --violet: #eddfff;
+      --ink: #171717;
+      --muted: #475467;
+      --scale: .18;
+    }
+
+    * { box-sizing: border-box; font-synthesis: none; }
+    html, body { margin: 0; min-height: 100%; background: #111827; color: #f8fafc; font-family: "ALS Granate Regular", "ALS Granate", Arial, sans-serif; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      background:
+        linear-gradient(180deg, #152033 0%, #0c111c 100%);
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: rgba(13, 20, 34, .94);
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+      backdrop-filter: blur(14px);
+      overflow-x: auto;
+    }
+
+    .toolbar .tool-button,
+    .toolbar .zoom {
+      height: 40px;
+      min-width: max-content;
+    }
+
+    .brand {
+      min-width: max-content;
+      font-family: "ALS Granate Bold", "ALS Granate", Arial, sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: #ffffff;
+      margin-right: 4px;
+    }
+
+    .tool-button, .icon-button {
+      border: 1px solid rgba(255, 255, 255, .16);
+      background: #1f2a44;
+      color: #ffffff;
+      height: 36px;
+      border-radius: 6px;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .icon-button {
+      width: 50px;
+      height: 50px;
+      padding: 0;
+      font-weight: 700;
+      font-size: 22px;
+    }
+
+    .tool-button.primary { background: #2f5dd3; border-color: #3c6cef; }
+    .tool-button.active,
+    .icon-button.active {
+      background: #ffffff;
+      color: #172033;
+      border-color: #ffffff;
+    }
+    .toolbar .export-button { margin-left: auto; }
+    .tool-button svg,
+    .zoom svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      stroke: currentColor;
+    }
+    .zoom {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #cbd5e1;
+      font-size: 13px;
+      white-space: nowrap;
+      padding: 0 12px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      background: #172033;
+      border-radius: 6px;
+    }
+    .zoom input { width: 150px; accent-color: #7dc8ee; }
+
+    .stage {
+      overflow: auto;
+      padding: 18px;
+      touch-action: pan-x pan-y;
+    }
+
+    .stage.pan-mode {
+      cursor: grab;
+      user-select: none;
+    }
+
+    .stage.pan-mode.panning {
+      cursor: grabbing;
+    }
+
+    .stage.pan-mode .sheet {
+      pointer-events: auto;
+    }
+
+    .sheet-wrap {
+      width: calc(var(--sheet-w) * var(--scale));
+      height: calc(var(--sheet-h) * var(--scale));
+      min-width: calc(var(--sheet-w) * var(--scale));
+      min-height: calc(var(--sheet-h) * var(--scale));
+      margin: 0 auto;
+    }
+
+    .sheet {
+      position: relative;
+      width: var(--sheet-w);
+      height: var(--sheet-h);
+      background: #ffffff;
+      color: var(--ink);
+      overflow: hidden;
+      transform-origin: top left;
+      transform: scale(var(--scale));
+      box-shadow: 0 18px 70px rgba(0, 0, 0, .45);
+      user-select: none;
+    }
+
+    .sheet.exporting {
+      transform: none !important;
+      box-shadow: none;
+    }
+
+    .header-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 4961px;
+      height: 167px;
+      background: var(--blue);
+    }
+
+    .editable {
+      position: absolute;
+      overflow: hidden;
+      padding: 0;
+      white-space: pre-wrap;
+      line-height: 1.05;
+      outline: 0;
+    }
+
+    .editable:hover,
+    .cell:hover,
+    .venue:hover,
+    .time-cell:hover,
+    .legend-chip:hover {
+      box-shadow: inset 0 0 0 5px rgba(47, 93, 211, .35);
+    }
+
+    .title-project {
+      left: 53px;
+      top: 0;
+      width: 359px;
+      height: 164px;
+      color: #fff;
+      font-family: "ALS Granate Light", "ALS Granate", Arial, sans-serif;
+      font-size: 31px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+    }
+
+    .title-main {
+      left: 615px;
+      top: 0;
+      width: 3931px;
+      height: 164px;
+      color: #fff;
+      font-family: "ALS Granate Bold", "ALS Granate", Arial, sans-serif;
+      font-size: 50px;
+      font-weight: 400;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      padding-left: 130px;
+      padding-right: 130px;
+      white-space: nowrap;
+      text-wrap: nowrap;
+    }
+
+    .text-flow {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      line-height: inherit;
+      white-space: inherit;
+      text-align: inherit;
+    }
+
+    .faded-arrow {
+      position: absolute;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .faded-arrow.flip {
+      transform: rotate(180deg);
+    }
+
+    .faded-arrow svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .time-header {
+      position: absolute;
+      left: 0;
+      width: 4961px;
+      height: 109px;
+      background: var(--blue-soft);
+    }
+
+    .time-label {
+      position: absolute;
+      left: 53px;
+      width: 323px;
+      height: 109px;
+      color: var(--blue);
+      font-family: "ALS Granate Light", "ALS Granate", Arial, sans-serif;
+      font-size: 31px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      line-height: 1.05;
+    }
+
+    .time-cell {
+      position: absolute;
+      top: 0;
+      height: 109px;
+      color: var(--blue);
+      font-family: "ALS Granate Bold", "ALS Granate", Arial, sans-serif;
+      font-size: 31px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      line-height: 1.02;
+      padding-left: 0;
+      white-space: pre-line;
+    }
+
+    .date-stripe {
+      position: absolute;
+      left: 0;
+      width: 135px;
+      background: var(--blue);
+      color: #fff;
+      font-family: "ALS Granate Bold", "ALS Granate", Arial, sans-serif;
+      font-size: 54px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 0;
+      white-space: pre-line;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .date-stripe .date-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: max-content;
+      transform: rotate(-90deg);
+      transform-origin: center;
+      white-space: nowrap;
+    }
+
+    .date-stripe .date-main {
+      color: #ffffff;
+      font-family: "ALS Granate Bold", "ALS Granate", Arial, sans-serif;
+      font-weight: 400;
+    }
+
+    .date-stripe .date-weekday {
+      color: #98daef;
+      font-family: "ALS Granate Light", "ALS Granate", Arial, sans-serif;
+      font-weight: 400;
+      font-size: .74em;
+      margin-top: 10px;
+    }
+
+    .venue {
+      position: absolute;
+      left: 145px;
+      width: 267px;
+      background: var(--hall);
+      color: #000;
+      font-family: "PF Din Text Comp Pro Medium", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-size: 30px;
+      font-weight: 400;
+      font-synthesis: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.05;
+      padding: 6px 12px;
+      white-space: pre-line;
+      overflow: hidden;
+      overflow-wrap: normal;
+      word-break: keep-all;
+    }
+
+    .venue-title {
+      display: block;
+      font-family: "PF Din Text Comp Pro Medium", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-weight: 400;
+      line-height: inherit;
+    }
+
+    .venue-note {
+      display: block;
+      font-family: "PF Din Text Comp Pro Regular", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-weight: 400;
+      line-height: inherit;
+    }
+
+    .cell {
+      position: absolute;
+      border: 2px solid var(--blue-soft);
+      background: #ffffff;
+      color: #111827;
+      padding: 10px 12px;
+      font-family: "PF Din Text Comp Pro Regular", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-size: 24px;
+      line-height: 1.08;
+      font-synthesis: none;
+      overflow: hidden;
+      white-space: normal;
+    }
+
+    .venue b,
+    .venue strong,
+    .cell b,
+    .cell strong,
+    .legend-chip b,
+    .legend-chip strong,
+    .editor-area b,
+    .editor-area strong {
+      font-family: "PF Din Text Comp Pro Bold", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-weight: 400;
+      line-height: inherit;
+    }
+
+    .venue .font-regular,
+    .cell .font-regular,
+    .legend-chip .font-regular,
+    .editor-area .font-regular {
+      font-family: "PF Din Text Comp Pro Regular", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-weight: 400;
+    }
+
+    .venue .font-medium,
+    .cell .font-medium,
+    .legend-chip .font-medium,
+    .editor-area .font-medium {
+      font-family: "PF Din Text Comp Pro Medium", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-weight: 400;
+    }
+
+    .venue .font-bold,
+    .cell .font-bold,
+    .legend-chip .font-bold,
+    .editor-area .font-bold {
+      font-family: "PF Din Text Comp Pro Bold", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-weight: 400;
+    }
+
+    .venue .font-italic,
+    .cell .font-italic,
+    .legend-chip .font-italic,
+    .editor-area .font-italic,
+    .venue i,
+    .venue em,
+    .cell i,
+    .cell em,
+    .legend-chip i,
+    .legend-chip em,
+    .editor-area i,
+    .editor-area em {
+      font-style: italic;
+    }
+
+    .editable .font-regular,
+    .time-cell .font-regular,
+    .date-stripe .font-regular {
+      font-family: "ALS Granate Regular", "ALS Granate", Arial, sans-serif;
+      font-weight: 400;
+    }
+
+    .editable .font-medium,
+    .time-cell .font-medium,
+    .date-stripe .font-medium {
+      font-family: "ALS Granate Regular", "ALS Granate", Arial, sans-serif;
+      font-weight: 400;
+    }
+
+    .editable .font-bold,
+    .time-cell .font-bold,
+    .date-stripe .font-bold,
+    .editable b,
+    .editable strong,
+    .time-cell b,
+    .time-cell strong,
+    .date-stripe b,
+    .date-stripe strong {
+      font-family: "ALS Granate Bold", "ALS Granate", Arial, sans-serif;
+      font-weight: 400;
+    }
+
+    .editable .font-italic,
+    .time-cell .font-italic,
+    .date-stripe .font-italic,
+    .editable i,
+    .editable em,
+    .time-cell i,
+    .time-cell em,
+    .date-stripe i,
+    .date-stripe em {
+      font-style: italic;
+    }
+
+    .venue div,
+    .venue p,
+    .cell div,
+    .cell p,
+    .legend-chip div,
+    .legend-chip p {
+      margin: 0;
+    }
+
+    .cell.selected {
+      box-shadow: inset 0 0 0 7px #2f5dd3;
+      z-index: 4;
+    }
+
+    .cell.hidden-cell {
+      display: none;
+    }
+
+    .resize-col,
+    .resize-row {
+      position: absolute;
+      z-index: 8;
+      background: transparent;
+    }
+
+    .resize-col {
+      width: 18px;
+      margin-left: -9px;
+      cursor: col-resize;
+    }
+
+    .resize-row {
+      height: 18px;
+      margin-top: -9px;
+      cursor: row-resize;
+    }
+
+    .resize-col:hover,
+    .resize-row:hover {
+      background: rgba(47, 93, 211, .25);
+    }
+
+    .legend-title {
+      position: absolute;
+      left: 142px;
+      top: 3354px;
+      width: 270px;
+      height: 109px;
+      color: var(--muted);
+      font-family: "ALS Granate Light", "ALS Granate", Arial, sans-serif;
+      font-size: 31px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      line-height: 1.05;
+    }
+
+    .legend-chip {
+      position: absolute;
+      top: 3363px;
+      height: 91px;
+      border: 2px solid var(--blue-soft);
+      font-family: "PF Din Text Comp Pro Regular", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-size: 30px;
+      font-weight: 400;
+      font-synthesis: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 16px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: stretch;
+      justify-content: stretch;
+      padding: 0;
+      background: rgba(0, 0, 0, .67);
+    }
+
+    .modal.open { display: flex; }
+
+    .editor-panel {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      max-height: none;
+      display: grid;
+      grid-template-rows: auto auto minmax(320px, 1fr) auto;
+      background: #101827;
+      color: #f8fafc;
+      border: 0;
+      border-radius: 0;
+      box-shadow: 0 24px 90px rgba(0, 0, 0, .55);
+      overflow: hidden;
+    }
+
+    .editor-head,
+    .editor-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .editor-actions {
+      border-top: 1px solid rgba(255, 255, 255, .1);
+      border-bottom: 0;
+      justify-content: flex-end;
+    }
+
+    .editor-title {
+      font-size: 15px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .editor-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+      background: #0b1220;
+    }
+
+    .editor-tools input[type="number"] {
+      width: 110px;
+      height: 50px;
+      padding: 0 12px;
+      color: #fff;
+      background: #172033;
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 6px;
+    }
+
+    .swatch {
+      width: 46px;
+      height: 46px;
+      border: 1px solid rgba(255, 255, 255, .45);
+      border-radius: 50%;
+      background: var(--swatch);
+    }
+
+    .editor-area {
+      min-height: 320px;
+      padding: 28px;
+      overflow: auto;
+      outline: 0;
+      background: #111827;
+      color: #f8fafc;
+      font-family: "PF Din Text Comp Pro Regular", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-size: 40px;
+      line-height: 1.2;
+      white-space: pre-wrap;
+    }
+
+    .editor-area ul,
+    .editor-area ol { margin: 0 0 0 44px; padding: 0; }
+    .editor-area li { margin: 6px 0; }
+
+    .status {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 80;
+      min-width: max-content;
+      max-width: calc(100vw - 28px);
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, .94);
+      color: #cbd5e1;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+    }
+
+    .status.visible {
+      opacity: 1;
+    }
+
+    @media (max-width: 720px) {
+      .toolbar {
+        align-items: stretch;
+        gap: 8px;
+      }
+      .brand { display: none; }
+      .stage { padding: 10px; }
+      .tool-button { height: 34px; padding: 0 10px; }
+      .zoom input { width: 100px; }
+    }
+
+    @page {
+      size: A3 landscape;
+      margin: 0;
+    }
+
+    @media print {
+      body { background: #fff; }
+      .toolbar, .modal { display: none !important; }
+      .stage { padding: 0; overflow: visible; }
+      .sheet-wrap { width: 420mm; height: 297mm; }
+      .sheet {
+        transform: scale(.304745);
+        transform-origin: top left;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="toolbar">
+      <div class="brand">Doroga 2026 Planner</div>
+      <button class="tool-button" id="panBtn" title="Двигать увеличенный документ">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11.5V10a2 2 0 0 0-4 0v1"/><path d="M14 10V8a2 2 0 0 0-4 0v4"/><path d="M10 10.5V5.8a2 2 0 0 0-4 0V14"/><path d="M6 13.8 4.8 12.5a2 2 0 0 0-2.9 2.7l4.7 5A5.8 5.8 0 0 0 10.8 22H14a6 6 0 0 0 6-6v-4.5a2 2 0 0 0-4 0V12"/></svg>
+        Двигать
+      </button>
+      <button class="tool-button" id="selectBtn" title="Выбор нескольких ячеек">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
+        Выбор
+      </button>
+      <button class="tool-button" id="mergeBtn" title="Объединить выделенные ячейки">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 4v16M4 12h16" opacity=".35"/><path d="M8 12h8M12 8v8"/></svg>
+        Объединить
+      </button>
+      <button class="tool-button" id="splitBtn" title="Разъединить выбранную ячейку">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M8 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3M16 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3"/><path d="M9 12h6M12 9v6"/></svg>
+        Разъединить
+      </button>
+      <label class="zoom" title="Масштаб листа">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M10.5 7.5v6M7.5 10.5h6"/></svg>
+        Масштаб <input id="zoomRange" type="range" min="8" max="80" value="18">
+      </label>
+      <button class="tool-button" id="saveBtn" title="Сохранить состояние">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 4h12l2 2v14H5z"/><path d="M8 4v6h8V4M8 20v-7h8v7"/></svg>
+        Сохранить
+      </button>
+      <button class="tool-button" id="loadBtn" title="Загрузить состояние">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+        Загрузить
+      </button>
+      <button class="tool-button primary export-button" id="pdfBtn" title="PDF A3 400dpi">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M8 15h8M8 18h5"/></svg>
+        PDF A3 400dpi
+      </button>
+      <span class="status" id="status" aria-live="polite"></span>
+    </div>
+    <main class="stage" id="stage">
+      <div class="sheet-wrap" id="sheetWrap">
+        <section class="sheet" id="sheet" aria-label="A3 planner sheet"></section>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true">
+    <div class="editor-panel">
+      <div class="editor-head">
+        <div class="editor-title" id="editorTitle">Редактирование</div>
+        <button class="icon-button" id="closeEditor" title="Закрыть">×</button>
+      </div>
+      <div class="editor-tools">
+        <button class="icon-button" data-font="font-regular" title="Regular">R</button>
+        <button class="icon-button" data-font="font-medium" title="Medium">M</button>
+        <button class="icon-button" data-font="font-bold" title="Bold">B</button>
+        <button class="icon-button" data-italic title="Italic">I</button>
+        <button class="icon-button" data-cmd="insertUnorderedList" title="Маркированный список">•</button>
+        <button class="icon-button" data-cmd="insertOrderedList" title="Нумерованный список">1.</button>
+        <button class="icon-button" data-insert="–" title="Среднее тире">–</button>
+        <button class="icon-button" data-insert="—" title="Длинное тире">—</button>
+        <button class="icon-button" data-insert="«»" title="Кавычки елочкой">«»</button>
+        <input id="fontSizeInput" type="number" min="10" max="72" step="1" title="Размер шрифта">
+        <button class="swatch" style="--swatch:#ffffff" data-bg="#ffffff" title="Белый"></button>
+        <button class="swatch" style="--swatch:#b8e4e2" data-bg="#b8e4e2" title="Бирюзовый"></button>
+        <button class="swatch" style="--swatch:#f4d8e0" data-bg="#f4d8e0" title="Розовый"></button>
+        <button class="swatch" style="--swatch:#ffe2c4" data-bg="#ffe2c4" title="Персиковый"></button>
+        <button class="swatch" style="--swatch:#eddfff" data-bg="#eddfff" title="Фиолетовый"></button>
+        <button class="swatch" style="--swatch:#7dc8ee" data-bg="#7dc8ee" title="Голубой"></button>
+      </div>
+      <div class="editor-area" id="editorArea" contenteditable="true"></div>
+      <div class="editor-actions">
+        <button class="tool-button" id="cancelEditor">Отмена</button>
+        <button class="tool-button primary" id="applyEditor">Применить</button>
+      </div>
+    </div>
+  </div>
+
+  <input id="stateFile" type="file" accept="application/json" hidden>
+
+  <script>
+    const SHEET_W = 4961;
+    const SHEET_H = 3508;
+    const TABLE_X = 421;
+    const TABLE_W = 4486;
+    const VENUE_X = 145;
+    const VENUE_W = 267;
+    const GAP_X = 9;
+    const GAP_Y = 11;
+    const MIN_COL = 110;
+    const MIN_ROW = 48;
+    const A3_400_SCALE = 400 / 300;
+
+    const colors = {
+      blue: "#234497",
+      blueSoft: "#cad1e3",
+      hall: "#7dc8ee",
+      mint: "#b8e4e2",
+      rose: "#f4d8e0",
+      peach: "#ffe2c4",
+      violet: "#eddfff",
+      white: "#ffffff"
+    };
+
+    const timeLabels = [
+      "09:00 –\n09:30", "09:30 –\n10:00", "10:00 –\n10:30", "10:30 –\n11:00",
+      "11:00 –\n11:30", "11:30 –\n12:00", "12:00 –\n12:30", "12:30 –\n13:00",
+      "13:00 –\n13:30", "13:30 –\n14:00", "14:00 –\n14:30", "14:30 –\n15:00",
+      "15:00 –\n15:30", "15:30 –\n16:00", "16:00 –\n16:30", "16:30 –\n17:00",
+      "17:00 –\n17:30", "17:30 –\n18:00", "18:00 –\n18:30", "18:30 –\n19:00",
+      "19:00 –\n19:30"
+    ];
+
+    const sections = [
+      { id: "s0", headerY: 167, bodyY: 285, stripeY: 285, stripeH: 310, date: "13 октября\nвторник", rowHeights: [310], venue: ["Выставочный\nпавильон"] },
+      { id: "s1", headerY: 606, bodyY: 726, stripeY: 726, stripeH: 805, date: "13 октября\nвторник", rowHeights: Array(8).fill(91), venue: ["Выставочный\nпавильон", "Пресс-Центр", "Зал Краснодар\n(380чел)", "Зал Сочи\n(150 чел)", "Зал Анапа\n(150 чел)", "Зал Сириус\n(круглый стол 60 чел)", "Зал Дагомыс\n(70 чел)", ""] },
+      { id: "s2", headerY: 1542, bodyY: 1662, stripeY: 1662, stripeH: 805, date: "14 октября\nсреда", rowHeights: Array(8).fill(91), venue: ["Выставочный\nпавильон", "Пресс-Центр", "Зал Краснодар\n(380чел)", "Зал Сочи\n(150 чел)", "Зал Анапа\n(150 чел)", "Зал Сириус\n(круглый стол 60 чел)", "Зал Дагомыс\n(70 чел)", ""] },
+      { id: "s3", headerY: 2478, bodyY: 2598, stripeY: 2598, stripeH: 703, date: "15 октября\nчетверг", rowHeights: Array(7).fill(91), venue: ["Выставочный\nпавильон", "Пресс-Центр", "Зал Краснодар\n(380чел)", "Зал Сочи\n(150 чел)", "Зал Анапа\n(150 чел)", "Зал Сириус\n(круглый стол 60 чел)", "Зал Дагомыс\n(70 чел)"] }
+    ];
+
+    const state = {
+      zoom: 18,
+      colWidths: [205, 205, 205, 205, 205, 205, 205, 205, 205, 205, 205, 205, 205, 205, 205, 205, 206, 205, 205, 205, 205],
+      text: {},
+      cells: {},
+      merged: {},
+      hidden: {},
+      bg: {},
+      fontSize: {},
+      groupFontSize: {}
+    };
+
+    const sheet = document.getElementById("sheet");
+    const stage = document.getElementById("stage");
+    const statusEl = document.getElementById("status");
+    const zoomRange = document.getElementById("zoomRange");
+    const modal = document.getElementById("modal");
+    const editorArea = document.getElementById("editorArea");
+    const editorTitle = document.getElementById("editorTitle");
+    const fontSizeInput = document.getElementById("fontSizeInput");
+    let activeTarget = null;
+    let savedEditorRange = null;
+    let selectMode = false;
+    let panMode = false;
+    let panDrag = null;
+    const selected = new Set();
+
+    function htmlEscape(value) {
+      return String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" }[ch]));
+    }
+
+    function flowHtml(html) {
+      return `<span class="text-flow">${html}</span>`;
+    }
+
+    function editorHtmlFromElement(el) {
+      const flow = el.children.length === 1 && el.firstElementChild?.classList.contains("text-flow")
+        ? el.firstElementChild
+        : null;
+      return flow ? flow.innerHTML : el.innerHTML;
+    }
+
+    function styleBox(el, x, y, w, h) {
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      el.style.width = `${w}px`;
+      el.style.height = `${h}px`;
+    }
+
+    function xForCol(col) {
+      let x = TABLE_X;
+      for (let i = 0; i < col; i++) x += state.colWidths[i] + GAP_X;
+      return x;
+    }
+
+    function yForRow(section, row) {
+      let y = section.bodyY;
+      for (let i = 0; i < row; i++) y += section.rowHeights[i] + GAP_Y;
+      return y;
+    }
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+      statusEl.classList.toggle("visible", Boolean(text));
+      clearTimeout(setStatus.timer);
+      setStatus.timer = setTimeout(() => {
+        statusEl.textContent = "";
+        statusEl.classList.remove("visible");
+      }, 2400);
+    }
+
+    function timeCellIds() {
+      return sections.flatMap(section => timeLabels.map((_, col) => `${section.id}-time-${col}`));
+    }
+
+    function venueCellIds() {
+      return sections.flatMap(section => section.rowHeights.map((_, row) => `${section.id}-venue-${row}`));
+    }
+
+    function elementFontSize(el, fallback) {
+      const id = el.dataset.id;
+      if (el.classList.contains("time-cell")) return state.groupFontSize.timeCells || state.fontSize[id] || fallback;
+      if (el.classList.contains("venue")) return state.groupFontSize.venues || state.fontSize[id] || fallback;
+      return state.fontSize[id] || fallback;
+    }
+
+    function syncFontSizeGroup(group, fontSize) {
+      state.groupFontSize[group] = fontSize;
+      const ids = group === "timeCells" ? timeCellIds() : venueCellIds();
+      ids.forEach(itemId => {
+        state.fontSize[itemId] = fontSize;
+      });
+    }
+
+    function dateMarkup(value) {
+      const [main, weekday] = String(value).split(/\n/);
+      return `<span class="date-stack"><span class="date-main">${htmlEscape(main || "")}</span>${weekday ? `<span class="date-weekday">${htmlEscape(weekday)}</span>` : ""}</span>`;
+    }
+
+    function normalizeTypography(root) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      let quoteOpen = true;
+      for (const node of nodes) {
+        let text = node.nodeValue;
+        text = text.replace(/(\d)\s*%/g, "$1 %");
+        text = text.replace(/(^|[\s([{])--(?=\s|$)/g, "$1—");
+        text = text.replace(/(\s)-(\s)/g, "$1–$2");
+        text = text.replace(/"([^"]*)"/g, "«$1»");
+        text = text.replace(/"/g, () => {
+          const q = quoteOpen ? "«" : "»";
+          quoteOpen = !quoteOpen;
+          return q;
+        });
+        node.nodeValue = text;
+      }
+    }
+
+    function normalizeTypographyText(value) {
+      const holder = document.createElement("div");
+      holder.textContent = value;
+      normalizeTypography(holder);
+      return holder.textContent;
+    }
+
+    function textFromEditorHtml(html) {
+      const holder = document.createElement("div");
+      holder.innerHTML = String(html)
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<\/(div|p)>/gi, "\n");
+      return holder.textContent;
+    }
+
+    function sanitizeEditorHtml(html) {
+      const template = document.createElement("template");
+      template.innerHTML = html;
+      const fontClasses = ["font-regular", "font-medium", "font-bold"];
+      template.content.querySelectorAll("*").forEach(el => {
+        const tag = el.tagName.toLowerCase();
+        const style = el.getAttribute("style") || "";
+        const bold = /font-weight\s*:\s*(bold|[6-9]00)/i.test(style);
+        const italic = /font-style\s*:\s*italic/i.test(style);
+        const fontClass = fontClasses.find(className => el.classList.contains(className));
+        const isItalic = italic || el.classList.contains("font-italic") || ["I", "EM"].includes(el.tagName);
+        el.removeAttribute("style");
+        el.removeAttribute("class");
+        el.removeAttribute("id");
+        if (fontClass) el.classList.add(fontClass);
+        if (isItalic) el.classList.add("font-italic");
+        if (tag === "span" && (bold || italic)) {
+          const replacement = document.createElement("span");
+          if (fontClass) replacement.classList.add(fontClass);
+          if (isItalic) replacement.classList.add("font-italic");
+          if (bold && !fontClass) replacement.classList.add("font-bold");
+          while (el.firstChild) replacement.appendChild(el.firstChild);
+          el.replaceWith(replacement);
+        }
+      });
+      return template.innerHTML;
+    }
+
+    function hasExplicitFontMarkup(html) {
+      return /font-(regular|medium|bold|italic)|<(b|strong|i|em)\b|font-(weight|style)\s*:/i.test(String(html));
+    }
+
+    function enforceMainTitleSpacing(html) {
+      const holder = document.createElement("div");
+      holder.innerHTML = html;
+      const walker = document.createTreeWalker(holder, NodeFilter.SHOW_TEXT);
+      while (walker.nextNode()) {
+        walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(/(»\.)\s*(13[–-]15)/g, "$1\u00a0$2");
+      }
+      return holder.innerHTML;
+    }
+
+    function selectedEditorRange() {
+      editorArea.focus();
+      restoreEditorSelection();
+      const selection = window.getSelection();
+      if (!selection.rangeCount || !editorArea.contains(selection.getRangeAt(0).commonAncestorContainer)) {
+        const fullRange = document.createRange();
+        fullRange.selectNodeContents(editorArea);
+        selection.removeAllRanges();
+        selection.addRange(fullRange);
+      }
+      const range = selection.getRangeAt(0);
+      if (range.collapsed) range.selectNodeContents(editorArea);
+      if (!editorArea.contains(range.commonAncestorContainer)) return null;
+      return { selection, range };
+    }
+
+    function applyInlineFont(className) {
+      const selected = selectedEditorRange();
+      if (!selected) return;
+      const { selection, range } = selected;
+      const span = document.createElement("span");
+      span.className = className;
+      span.appendChild(range.extractContents());
+      range.insertNode(span);
+      selection.removeAllRanges();
+      const nextRange = document.createRange();
+      nextRange.selectNodeContents(span);
+      selection.addRange(nextRange);
+      saveEditorSelection();
+      updateFontButtons();
+    }
+
+    function applyInlineClass(className) {
+      const selected = selectedEditorRange();
+      if (!selected) return;
+      const { selection, range } = selected;
+      const span = document.createElement("span");
+      span.className = className;
+      span.appendChild(range.extractContents());
+      range.insertNode(span);
+      selection.removeAllRanges();
+      const nextRange = document.createRange();
+      nextRange.selectNodeContents(span);
+      selection.addRange(nextRange);
+      saveEditorSelection();
+      updateFontButtons();
+    }
+
+    function editorContainsNode(node) {
+      return node === editorArea || editorArea.contains(node);
+    }
+
+    function saveEditorSelection() {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
+      const range = selection.getRangeAt(0);
+      if (editorContainsNode(range.commonAncestorContainer)) savedEditorRange = range.cloneRange();
+    }
+
+    function restoreEditorSelection() {
+      if (!savedEditorRange) return;
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(savedEditorRange);
+    }
+
+    function fontClassFromNode(node) {
+      const el = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
+      const match = el?.closest?.(".font-bold, .font-medium, .font-regular, .venue-title, .venue-note, b, strong");
+      if (match?.classList?.contains("font-bold") || ["B", "STRONG"].includes(match?.tagName)) return "font-bold";
+      if (match?.classList?.contains("font-medium") || match?.classList?.contains("venue-title")) return "font-medium";
+      if (match?.classList?.contains("font-regular") || match?.classList?.contains("venue-note")) return "font-regular";
+      if (activeTarget?.classList.contains("venue")) return "font-medium";
+      if (activeTarget?.classList.contains("time-cell") || activeTarget?.classList.contains("title-main") || activeTarget?.classList.contains("date-stripe")) return "font-bold";
+      return "font-regular";
+    }
+
+    function currentItalicState() {
+      const selection = window.getSelection();
+      const node = selection.rangeCount && editorArea.contains(selection.getRangeAt(0).commonAncestorContainer)
+        ? selection.getRangeAt(0).startContainer
+        : savedEditorRange?.startContainer;
+      const el = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
+      return Boolean(el?.closest?.(".font-italic, i, em"));
+    }
+
+    function currentFontClass() {
+      const selection = window.getSelection();
+      if (selection.rangeCount && editorArea.contains(selection.getRangeAt(0).commonAncestorContainer)) {
+        return fontClassFromNode(selection.getRangeAt(0).startContainer);
+      }
+      if (savedEditorRange) return fontClassFromNode(savedEditorRange.startContainer);
+      return fontClassFromNode(editorArea);
+    }
+
+    function updateFontButtons() {
+      const className = currentFontClass();
+      document.querySelectorAll("[data-font]").forEach(button => {
+        button.classList.toggle("active", button.dataset.font === className);
+      });
+      document.querySelectorAll("[data-italic]").forEach(button => {
+        button.classList.toggle("active", currentItalicState());
+      });
+    }
+
+    function sanitizeVenueHtml(html) {
+      if (hasExplicitFontMarkup(html)) {
+        const preparedHtml = String(html)
+          .replace(/class="venue-title"/g, 'class="font-medium"')
+          .replace(/class="venue-note"/g, 'class="font-regular"');
+        return sanitizeEditorHtml(preparedHtml)
+          .replace(/<br\s*\/?>/gi, "<br>")
+          .replace(/<\/(div|p)>/gi, "<br>");
+      }
+      let text = normalizeTypographyText(textFromEditorHtml(html))
+        .replace(/[ \t]+/g, " ")
+        .replace(/[ \t]*\n[ \t]*/g, "\n")
+        .replace(/\n{2,}/g, "\n")
+        .trim();
+      text = text.replace(/^Выставочный\s+павильон$/i, "Выставочный\nпавильон");
+      text = text.replace(/^(Зал\s+[^\n(]+)\s+(\([^)]*\))$/i, "$1\n$2");
+      text = text.replace(/^(Зал\s+Краснодар)\s*(\([^)]*\))$/i, "$1\n$2");
+      text = text.replace(/^(Зал\s+Сочи)\s*(\([^)]*\))$/i, "$1\n$2");
+      text = text.replace(/^(Зал\s+Анапа)\s*(\([^)]*\))$/i, "$1\n$2");
+      text = text.replace(/^(Зал\s+Сириус)\s*(\([^)]*\))$/i, "$1\n$2");
+      text = text.replace(/^(Зал\s+Дагомыс)\s*(\([^)]*\))$/i, "$1\n$2");
+      const lines = text.split("\n");
+      const lastLine = lines.at(-1) || "";
+      if (lines.length > 1 && /^\([^)]*\)$/.test(lastLine)) {
+        const title = lines.slice(0, -1).join("\n");
+        return `<span class="venue-title">${htmlEscape(title)}</span><span class="venue-note">${htmlEscape(lastLine)}</span>`;
+      }
+      return `<span class="venue-title">${htmlEscape(text)}</span>`;
+    }
+
+    function fitElementsInside(elements, minSize = 18) {
+      const items = [...elements];
+      if (!items.length) return;
+      let size = Math.min(...items.map(el => parseInt(el.style.fontSize, 10) || 30));
+      items.forEach(el => { el.style.fontSize = `${size}px`; });
+      const hasOverflow = () => items.some(el => el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1);
+      while (size > minSize && hasOverflow()) {
+        size -= 1;
+        items.forEach(el => { el.style.fontSize = `${size}px`; });
+      }
+    }
+
+    function fitVenueGroup() {
+      fitElementsInside(sheet.querySelectorAll(".venue"), 20);
+    }
+
+    function makeEditable(id, label, x, y, w, h, className, html, fontSize) {
+      const el = document.createElement("div");
+      el.className = `editable ${className || ""}`;
+      el.dataset.id = id;
+      el.dataset.label = label;
+      styleBox(el, x, y, w, h);
+      el.innerHTML = flowHtml(state.text[id] ?? html);
+      if (fontSize) el.style.fontSize = `${state.fontSize[id] || fontSize}px`;
+      el.addEventListener("click", event => {
+        event.stopPropagation();
+        openEditor(el);
+      });
+      sheet.appendChild(el);
+      return el;
+    }
+
+    function makeCell(id, section, row, col) {
+      const el = document.createElement("div");
+      el.className = "cell";
+      el.dataset.id = id;
+      el.dataset.section = section.id;
+      el.dataset.row = row;
+      el.dataset.col = col;
+      const merge = state.merged[id];
+      let x = xForCol(col);
+      let y = yForRow(section, row);
+      let w = state.colWidths[col];
+      let h = section.rowHeights[row];
+      if (merge) {
+        w = 0;
+        h = 0;
+        for (let c = col; c < col + merge.cols; c++) w += state.colWidths[c] + (c > col ? GAP_X : 0);
+        for (let r = row; r < row + merge.rows; r++) h += section.rowHeights[r] + (r > row ? GAP_Y : 0);
+      }
+      styleBox(el, x, y, w, h);
+      if (state.hidden[id]) el.classList.add("hidden-cell");
+      if (selected.has(id)) el.classList.add("selected");
+      el.style.background = state.bg[id] || "#ffffff";
+      el.style.fontSize = `${state.fontSize[id] || 24}px`;
+      el.innerHTML = state.cells[id] || "";
+      el.addEventListener("click", event => {
+        event.stopPropagation();
+        if (selectMode || event.ctrlKey || event.shiftKey) {
+          if (state.hidden[id]) return;
+          selected.has(id) ? selected.delete(id) : selected.add(id);
+          render();
+        } else {
+          if (!state.hidden[id]) openEditor(el);
+        }
+      });
+      sheet.appendChild(el);
+      return el;
+    }
+
+    function makeVenue(id, section, row, text) {
+      const el = document.createElement("div");
+      el.className = "venue";
+      el.dataset.id = id;
+      el.dataset.label = "Место проведения";
+      const y = yForRow(section, row);
+      styleBox(el, VENUE_X, y + 0.1, VENUE_W, section.rowHeights[row]);
+      el.style.fontSize = `${state.groupFontSize.venues || state.fontSize[id] || 30}px`;
+      el.innerHTML = sanitizeVenueHtml(state.text[id] ?? htmlEscape(text));
+      el.addEventListener("click", event => {
+        event.stopPropagation();
+        openEditor(el);
+      });
+      sheet.appendChild(el);
+    }
+
+    function renderHeader() {
+      const bar = document.createElement("div");
+      bar.className = "header-bar";
+      sheet.appendChild(bar);
+      makeEditable("projectTitle", "Проект", 53, 0, 359, 164, "title-project", "Проект\nна 21.07.2026 г.", 31);
+      makeEditable("mainTitle", "Заголовок", 615, 0, 3931, 164, "title-main", "ГРАФИК МЕРОПРИЯТИЙ ХII МЕЖДУНАРОДНОЙ СПЕЦИАЛИЗИРОВАННОЙ ВЫСТАВКИ «ДОРОГА 2026».&nbsp;13–15 октября 2026 года", 58);
+      [
+        { x: 2875, y: 0, w: 83, h: 46, opacity: .24, flip: false },
+        { x: 4696, y: 64, w: 187, h: 103, opacity: .46, flip: false },
+        { x: 4510, y: 23, w: 83, h: 46, opacity: .24, flip: true },
+        { x: 409, y: 31, w: 187, h: 103, opacity: .46, flip: true },
+        { x: 1980, y: 121, w: 83, h: 46, opacity: .24, flip: true }
+      ].forEach(arrow => {
+        const el = document.createElement("div");
+        el.className = `faded-arrow${arrow.flip ? " flip" : ""}`;
+        styleBox(el, arrow.x, arrow.y, arrow.w, arrow.h);
+        el.style.opacity = arrow.opacity;
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", `0 0 ${arrow.w} ${arrow.h}`);
+        svg.setAttribute("width", arrow.w);
+        svg.setAttribute("height", arrow.h);
+        svg.setAttribute("aria-hidden", "true");
+        const cw = arrow.w / 3;
+        const step = cw * .67;
+        for (let i = 0; i < 4; i++) {
+          const x = i * step;
+          const points = [
+            [x, 0],
+            [x + cw * .35, 0],
+            [x + cw, arrow.h / 2],
+            [x + cw * .35, arrow.h],
+            [x, arrow.h],
+            [x + cw * .65, arrow.h / 2]
+          ].map(point => point.join(",")).join(" ");
+          const chevron = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+          chevron.setAttribute("points", points);
+          chevron.setAttribute("fill", "#98daef");
+          svg.appendChild(chevron);
+        }
+        el.appendChild(svg);
+        sheet.appendChild(el);
+      });
+    }
+
+    function renderTimeHeader(section) {
+      const header = document.createElement("div");
+      header.className = "time-header";
+      header.style.top = `${section.headerY}px`;
+      sheet.appendChild(header);
+      makeEditable(`${section.id}-timeLabel`, "Место проведения / Время", 53, section.headerY, 323, 109, "time-label", "Место проведения / Время", 31);
+      timeLabels.forEach((label, col) => {
+        const el = document.createElement("div");
+        el.className = "time-cell";
+        el.dataset.id = `${section.id}-time-${col}`;
+        el.dataset.label = "Время";
+        styleBox(el, xForCol(col), section.headerY, state.colWidths[col], 109);
+        el.style.fontSize = `${state.groupFontSize.timeCells || state.fontSize[el.dataset.id] || 31}px`;
+        el.innerHTML = flowHtml(state.text[el.dataset.id] ?? htmlEscape(label));
+        el.addEventListener("click", event => {
+          event.stopPropagation();
+          openEditor(el);
+        });
+        sheet.appendChild(el);
+      });
+    }
+
+    function renderSection(section) {
+      renderTimeHeader(section);
+      const stripe = document.createElement("div");
+      stripe.className = "date-stripe";
+      stripe.dataset.id = `${section.id}-date`;
+      stripe.dataset.label = "Дата";
+      styleBox(stripe, 0, section.stripeY, 135, section.stripeH);
+      stripe.style.fontSize = `${state.fontSize[stripe.dataset.id] || 44}px`;
+      stripe.innerHTML = state.text[stripe.dataset.id] ?? dateMarkup(section.date);
+      stripe.addEventListener("click", event => {
+        event.stopPropagation();
+        openEditor(stripe);
+      });
+      sheet.appendChild(stripe);
+
+      section.rowHeights.forEach((_, row) => {
+        makeVenue(`${section.id}-venue-${row}`, section, row, section.venue[row] || "");
+        for (let col = 0; col < state.colWidths.length; col++) {
+          makeCell(`${section.id}-${row}-${col}`, section, row, col);
+        }
+      });
+
+      for (let col = 0; col < state.colWidths.length - 1; col++) {
+        const handle = document.createElement("div");
+        handle.className = "resize-col";
+        handle.dataset.col = col;
+        styleBox(handle, xForCol(col) + state.colWidths[col] + GAP_X / 2, section.headerY, 18, section.stripeY + section.stripeH - section.headerY);
+        handle.addEventListener("pointerdown", startColResize);
+        sheet.appendChild(handle);
+      }
+
+      for (let row = 0; row < section.rowHeights.length - 1; row++) {
+        const handle = document.createElement("div");
+        handle.className = "resize-row";
+        handle.dataset.section = section.id;
+        handle.dataset.row = row;
+        styleBox(handle, TABLE_X, yForRow(section, row) + section.rowHeights[row] + GAP_Y / 2, TABLE_W, 18);
+        handle.addEventListener("pointerdown", startRowResize);
+        sheet.appendChild(handle);
+      }
+    }
+
+    function renderLegend() {
+      makeEditable("legendTitle", "Цветовая классификация мероприятий", 142, 3354, 270, 109, "legend-title", "Цветовая классификация мероприятий", 31);
+      [
+        ["legend-mint", 421, 1061, colors.mint, "Мероприятия структурных подразделений федерального дорожного агентства, подведомственных учреждений"],
+        ["legend-rose", 1492, 633, colors.rose, "Мероприятия с участием почетных гостей"],
+        ["legend-peach", 2133, 420, colors.peach, "Обход выставки"],
+        ["legend-violet", 2561, 420, colors.violet, "Иные мероприятия"]
+      ].forEach(([id, x, w, bg, text]) => {
+        const el = document.createElement("div");
+        el.className = "legend-chip";
+        el.dataset.id = id;
+        el.dataset.label = "Условное обозначение";
+        styleBox(el, x, 3363, w, 91);
+        el.style.background = bg;
+        el.style.fontSize = `${state.fontSize[id] || 30}px`;
+        el.innerHTML = flowHtml(state.text[id] ?? htmlEscape(text));
+        el.addEventListener("click", event => {
+          event.stopPropagation();
+          openEditor(el);
+        });
+        sheet.appendChild(el);
+      });
+    }
+
+    function render() {
+      sheet.innerHTML = "";
+      renderHeader();
+      sections.forEach(renderSection);
+      fitVenueGroup();
+      document.fonts?.ready.then(fitVenueGroup);
+      renderLegend();
+      applyScale();
+    }
+
+    function openEditor(el) {
+      activeTarget = el;
+      savedEditorRange = null;
+      editorTitle.textContent = el.dataset.label || el.dataset.id || "Редактирование";
+      editorArea.innerHTML = editorHtmlFromElement(el);
+      fontSizeInput.value = elementFontSize(el, parseInt(el.style.fontSize, 10) || 24);
+      modal.classList.add("open");
+      setTimeout(() => {
+        editorArea.focus();
+        updateFontButtons();
+      }, 30);
+    }
+
+    function closeEditor() {
+      modal.classList.remove("open");
+      activeTarget = null;
+      savedEditorRange = null;
+      editorArea.innerHTML = "";
+      updateFontButtons();
+    }
+
+    function applyEditor() {
+      if (!activeTarget) return closeEditor();
+      normalizeTypography(editorArea);
+      const id = activeTarget.dataset.id;
+      const fontSize = Math.max(10, Math.min(72, parseInt(fontSizeInput.value, 10) || 24));
+      if (activeTarget.classList.contains("cell")) {
+        state.cells[id] = sanitizeEditorHtml(editorArea.innerHTML);
+        state.bg[id] = activeTarget.dataset.nextBg || state.bg[id] || activeTarget.style.backgroundColor || "#ffffff";
+      } else if (activeTarget.classList.contains("venue")) {
+        state.text[id] = sanitizeVenueHtml(editorArea.innerHTML);
+      } else {
+        let cleanHtml = sanitizeEditorHtml(editorArea.innerHTML);
+        if (id === "mainTitle") cleanHtml = enforceMainTitleSpacing(cleanHtml);
+        state.text[id] = cleanHtml;
+      }
+      if (activeTarget.classList.contains("time-cell")) {
+        syncFontSizeGroup("timeCells", fontSize);
+        setStatus("Размер времени обновлен во всех шапках");
+      } else if (activeTarget.classList.contains("venue")) {
+        syncFontSizeGroup("venues", fontSize);
+        setStatus("Размер мест проведения обновлен везде");
+      } else {
+        state.fontSize[id] = fontSize;
+      }
+      closeEditor();
+      render();
+    }
+
+    function activeCellIds() {
+      return [...selected].filter(id => !state.hidden[id]);
+    }
+
+    function mergeSelected() {
+      const ids = activeCellIds();
+      if (ids.length < 2) return setStatus("Выберите несколько ячеек");
+      const parts = ids.map(id => {
+        const [section, row, col] = id.split("-");
+        return { id, section, row: Number(row), col: Number(col) };
+      });
+      const section = parts[0].section;
+      if (!parts.every(p => p.section === section)) return setStatus("Объединение только внутри одного блока");
+      const minRow = Math.min(...parts.map(p => p.row));
+      const maxRow = Math.max(...parts.map(p => p.row));
+      const minCol = Math.min(...parts.map(p => p.col));
+      const maxCol = Math.max(...parts.map(p => p.col));
+      const expected = (maxRow - minRow + 1) * (maxCol - minCol + 1);
+      if (expected !== parts.length) return setStatus("Нужно выделить прямоугольник ячеек");
+      const master = `${section}-${minRow}-${minCol}`;
+      const html = parts.map(p => state.cells[p.id]).filter(Boolean).join("<br>");
+      state.merged[master] = { rows: maxRow - minRow + 1, cols: maxCol - minCol + 1 };
+      if (html) state.cells[master] = html;
+      for (const p of parts) {
+        if (p.id !== master) state.hidden[p.id] = master;
+      }
+      selected.clear();
+      setStatus("Ячейки объединены");
+      render();
+    }
+
+    function splitSelected() {
+      const ids = activeCellIds();
+      const id = ids[0];
+      if (!id || !state.merged[id]) return setStatus("Выберите объединенную ячейку");
+      const merge = state.merged[id];
+      const [section, row, col] = id.split("-");
+      for (let r = Number(row); r < Number(row) + merge.rows; r++) {
+        for (let c = Number(col); c < Number(col) + merge.cols; c++) {
+          delete state.hidden[`${section}-${r}-${c}`];
+        }
+      }
+      delete state.merged[id];
+      selected.clear();
+      setStatus("Ячейка разъединена");
+      render();
+    }
+
+    function startColResize(event) {
+      event.stopPropagation();
+      const col = Number(event.currentTarget.dataset.col);
+      const startX = event.clientX;
+      const startLeft = state.colWidths[col];
+      const startRight = state.colWidths[col + 1];
+      const scale = Number(getComputedStyle(document.documentElement).getPropertyValue("--scale")) || 1;
+      const move = e => {
+        const dx = (e.clientX - startX) / scale;
+        const left = Math.max(MIN_COL, startLeft + dx);
+        const right = Math.max(MIN_COL, startRight - dx);
+        const correction = startLeft + startRight - left - right;
+        state.colWidths[col] = left + correction / 2;
+        state.colWidths[col + 1] = right + correction / 2;
+        render();
+      };
+      const up = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+    }
+
+    function startRowResize(event) {
+      event.stopPropagation();
+      const section = sections.find(s => s.id === event.currentTarget.dataset.section);
+      const row = Number(event.currentTarget.dataset.row);
+      const startY = event.clientY;
+      const startTop = section.rowHeights[row];
+      const startBottom = section.rowHeights[row + 1];
+      const scale = Number(getComputedStyle(document.documentElement).getPropertyValue("--scale")) || 1;
+      const move = e => {
+        const dy = (e.clientY - startY) / scale;
+        const top = Math.max(MIN_ROW, startTop + dy);
+        const bottom = Math.max(MIN_ROW, startBottom - dy);
+        const correction = startTop + startBottom - top - bottom;
+        section.rowHeights[row] = top + correction / 2;
+        section.rowHeights[row + 1] = bottom + correction / 2;
+        render();
+      };
+      const up = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+    }
+
+    function applyScale() {
+      const scale = state.zoom / 100;
+      document.documentElement.style.setProperty("--scale", scale);
+      document.getElementById("sheetWrap").style.width = `${SHEET_W * scale}px`;
+      document.getElementById("sheetWrap").style.height = `${SHEET_H * scale}px`;
+    }
+
+    function setZoom(value) {
+      state.zoom = Math.max(8, Math.min(80, Math.round(value)));
+      zoomRange.value = state.zoom;
+      applyScale();
+    }
+
+    function setPanMode(value) {
+      panMode = Boolean(value);
+      document.getElementById("panBtn").classList.toggle("active", panMode);
+      stage.classList.toggle("pan-mode", panMode);
+      if (panMode) {
+        selectMode = false;
+        selected.clear();
+        document.getElementById("selectBtn").classList.remove("active");
+        render();
+      }
+    }
+
+    function startPan(event) {
+      if (!panMode || modal.classList.contains("open") || event.button !== 0) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      panDrag = {
+        x: event.clientX,
+        y: event.clientY,
+        left: stage.scrollLeft,
+        top: stage.scrollTop
+      };
+      stage.classList.add("panning");
+      const move = moveEvent => {
+        if (!panDrag) return;
+        moveEvent.preventDefault();
+        stage.scrollLeft = panDrag.left - (moveEvent.clientX - panDrag.x);
+        stage.scrollTop = panDrag.top - (moveEvent.clientY - panDrag.y);
+      };
+      const up = () => {
+        panDrag = null;
+        stage.classList.remove("panning");
+        window.removeEventListener("pointermove", move, true);
+        window.removeEventListener("pointerup", up, true);
+      };
+      window.addEventListener("pointermove", move, true);
+      window.addEventListener("pointerup", up, true);
+    }
+
+    function zoomByWheel(event) {
+      if (modal.classList.contains("open")) return;
+      event.preventDefault();
+      const oldScale = state.zoom / 100;
+      const rect = stage.getBoundingClientRect();
+      const pointerX = event.clientX - rect.left + stage.scrollLeft;
+      const pointerY = event.clientY - rect.top + stage.scrollTop;
+      const sheetX = pointerX / oldScale;
+      const sheetY = pointerY / oldScale;
+      const step = event.deltaY < 0 ? 3 : -3;
+      setZoom(state.zoom + step);
+      const newScale = state.zoom / 100;
+      stage.scrollLeft = sheetX * newScale - (event.clientX - rect.left);
+      stage.scrollTop = sheetY * newScale - (event.clientY - rect.top);
+    }
+
+    async function exportPdf() {
+      setStatus("Рендер PDF...");
+      selected.clear();
+      render();
+      await document.fonts.ready;
+      const oldScale = state.zoom;
+      sheet.classList.add("exporting");
+      try {
+        const canvas = await html2canvas(sheet, {
+          scale: A3_400_SCALE,
+          width: SHEET_W,
+          height: SHEET_H,
+          backgroundColor: "#ffffff",
+          useCORS: true,
+          logging: false
+        });
+        const img = canvas.toDataURL("image/png");
+        const pdf = new window.jspdf.jsPDF({
+          orientation: "landscape",
+          unit: "mm",
+          format: "a3",
+          compress: true
+        });
+        pdf.addImage(img, "PNG", 0, 0, 420, 297, undefined, "FAST");
+        pdf.save("Doroga-2026-Planner-A3-400dpi.pdf");
+        setStatus("PDF готов");
+      } catch (error) {
+        console.error(error);
+        setStatus("Ошибка PDF");
+      } finally {
+        sheet.classList.remove("exporting");
+        state.zoom = oldScale;
+        zoomRange.value = oldScale;
+        render();
+      }
+    }
+
+    function saveState() {
+      const blob = new Blob([JSON.stringify({ state, sections }, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "doroga-planner-state.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function loadState(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          Object.assign(state, data.state || {});
+          if (Array.isArray(data.sections)) {
+            data.sections.forEach(saved => {
+              const section = sections.find(s => s.id === saved.id);
+              if (section && Array.isArray(saved.rowHeights)) section.rowHeights = saved.rowHeights;
+            });
+          }
+          selected.clear();
+          zoomRange.value = state.zoom;
+          render();
+          setStatus("Состояние загружено");
+        } catch (error) {
+          setStatus("JSON не прочитан");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    document.querySelectorAll("[data-cmd]").forEach(button => {
+      button.addEventListener("mousedown", event => event.preventDefault());
+      button.addEventListener("click", () => {
+        editorArea.focus();
+        restoreEditorSelection();
+        document.execCommand(button.dataset.cmd, false, null);
+        saveEditorSelection();
+      });
+    });
+
+    document.querySelectorAll("[data-font]").forEach(button => {
+      button.addEventListener("mousedown", event => event.preventDefault());
+      button.addEventListener("click", () => {
+        applyInlineFont(button.dataset.font);
+        updateFontButtons();
+      });
+    });
+
+    document.querySelectorAll("[data-italic]").forEach(button => {
+      button.addEventListener("mousedown", event => event.preventDefault());
+      button.addEventListener("click", () => {
+        applyInlineClass("font-italic");
+        updateFontButtons();
+      });
+    });
+
+    document.querySelectorAll("[data-insert]").forEach(button => {
+      button.addEventListener("mousedown", event => event.preventDefault());
+      button.addEventListener("click", () => {
+        editorArea.focus();
+        restoreEditorSelection();
+        const value = button.dataset.insert === "«»" ? "«»" : button.dataset.insert;
+        document.execCommand("insertText", false, value);
+        saveEditorSelection();
+      });
+    });
+
+    document.querySelectorAll("[data-bg]").forEach(button => {
+      button.addEventListener("click", () => {
+        if (activeTarget?.classList.contains("cell")) activeTarget.dataset.nextBg = button.dataset.bg;
+      });
+    });
+
+    editorArea.addEventListener("paste", event => {
+      event.preventDefault();
+      const text = event.clipboardData.getData("text/plain");
+      document.execCommand("insertText", false, text);
+      saveEditorSelection();
+    });
+    ["keyup", "mouseup", "input", "focus"].forEach(eventName => {
+      editorArea.addEventListener(eventName, () => {
+        saveEditorSelection();
+        updateFontButtons();
+      });
+    });
+    document.addEventListener("selectionchange", () => {
+      if (modal.classList.contains("open")) updateFontButtons();
+    });
+
+    document.getElementById("applyEditor").addEventListener("click", applyEditor);
+    document.getElementById("cancelEditor").addEventListener("click", closeEditor);
+    document.getElementById("closeEditor").addEventListener("click", closeEditor);
+    modal.addEventListener("click", event => {
+      if (event.target === modal) closeEditor();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && modal.classList.contains("open")) closeEditor();
+    });
+
+    document.getElementById("selectBtn").addEventListener("click", event => {
+      selectMode = !selectMode;
+      if (selectMode) setPanMode(false);
+      event.currentTarget.classList.toggle("active", selectMode);
+      if (!selectMode) selected.clear();
+      render();
+    });
+    document.getElementById("panBtn").addEventListener("click", () => setPanMode(!panMode));
+    document.getElementById("mergeBtn").addEventListener("click", mergeSelected);
+    document.getElementById("splitBtn").addEventListener("click", splitSelected);
+    document.getElementById("pdfBtn").addEventListener("click", exportPdf);
+    document.getElementById("saveBtn").addEventListener("click", saveState);
+    document.getElementById("loadBtn").addEventListener("click", () => document.getElementById("stateFile").click());
+    document.getElementById("stateFile").addEventListener("change", event => {
+      if (event.target.files[0]) loadState(event.target.files[0]);
+      event.target.value = "";
+    });
+
+    zoomRange.addEventListener("input", event => {
+      setZoom(Number(event.target.value));
+    });
+
+    stage.addEventListener("wheel", zoomByWheel, { passive: false });
+    stage.addEventListener("pointerdown", startPan, true);
+    stage.addEventListener("click", event => {
+      if (!panMode) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+    }, true);
+
+    window.addEventListener("resize", () => {
+      if (window.innerWidth < 760 && state.zoom > 20) {
+        state.zoom = 18;
+        zoomRange.value = state.zoom;
+        applyScale();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

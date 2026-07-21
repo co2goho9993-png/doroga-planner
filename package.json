@@ -1,0 +1,14 @@
+{
+  "name": "doroga-2026-planner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A3 Doroga 2026 planner web app with local fonts and PDF export.",
+  "main": "server.cjs",
+  "scripts": {
+    "start": "node server.cjs",
+    "check": "node scripts/check.cjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
