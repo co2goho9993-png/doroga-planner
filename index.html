@@ -1043,6 +1043,27 @@
       return y;
     }
 
+    const sectionLayoutDefaults = sections.map(section => ({
+      initialHeaderY: section.headerY,
+      bodyOffset: section.bodyY - section.headerY
+    }));
+
+    function rowBlockHeight(section) {
+      return section.rowHeights.reduce((total, height) => total + height, 0) + GAP_Y * Math.max(0, section.rowHeights.length - 1);
+    }
+
+    function refreshSectionLayout() {
+      let headerY = sectionLayoutDefaults[0].initialHeaderY;
+      sections.forEach((section, index) => {
+        const defaults = sectionLayoutDefaults[index];
+        section.headerY = headerY;
+        section.bodyY = section.headerY + defaults.bodyOffset;
+        section.stripeY = section.bodyY;
+        section.stripeH = rowBlockHeight(section);
+        headerY = section.stripeY + section.stripeH + GAP_Y;
+      });
+    }
+
     function setStatus(text) {
       statusEl.textContent = text;
       statusEl.classList.toggle("visible", Boolean(text));
@@ -1562,7 +1583,7 @@
       if (selected.has(id)) el.classList.add("selected");
       el.style.background = state.bg[id] || "#ffffff";
       el.style.fontSize = `${state.fontSize[id] || 24}px`;
-      el.innerHTML = state.cells[id] || "";
+      el.innerHTML = flowHtml(state.cells[id] || "");
       el.addEventListener("click", event => {
         event.stopPropagation();
         if (selectMode || event.ctrlKey || event.shiftKey) {
@@ -1690,11 +1711,12 @@
         sheet.appendChild(handle);
       }
 
-      for (let row = 0; row < section.rowHeights.length - 1; row++) {
+      for (let row = 0; row < section.rowHeights.length; row++) {
         const handle = document.createElement("div");
         handle.className = "resize-row";
         handle.dataset.section = section.id;
         handle.dataset.row = row;
+        handle.dataset.edge = row === section.rowHeights.length - 1 ? "bottom" : "between";
         styleBox(handle, TABLE_X, yForRow(section, row) + section.rowHeights[row] + GAP_Y / 2, TABLE_W, 18);
         handle.addEventListener("pointerdown", startRowResize);
         sheet.appendChild(handle);
@@ -1726,6 +1748,7 @@
     }
 
     function render() {
+      refreshSectionLayout();
       sheet.innerHTML = "";
       renderHeader();
       sections.forEach(renderSection);
@@ -1883,10 +1906,16 @@
       const row = Number(event.currentTarget.dataset.row);
       const startY = event.clientY;
       const startTop = section.rowHeights[row];
+      const edge = event.currentTarget.dataset.edge;
       const startBottom = section.rowHeights[row + 1];
       const scale = Number(getComputedStyle(document.documentElement).getPropertyValue("--scale")) || 1;
       const move = e => {
         const dy = (e.clientY - startY) / scale;
+        if (edge === "bottom") {
+          section.rowHeights[row] = Math.max(MIN_ROW, startTop + dy);
+          render();
+          return;
+        }
         const top = Math.max(MIN_ROW, startTop + dy);
         const bottom = Math.max(MIN_ROW, startBottom - dy);
         const correction = startTop + startBottom - top - bottom;
