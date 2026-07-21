@@ -1795,6 +1795,11 @@
       return [...selected].filter(id => !state.hidden[id]);
     }
 
+    function meaningfulBg(value) {
+      const color = String(value || "").trim().toLowerCase();
+      return color && color !== "#ffffff" && color !== "white" && color !== "rgb(255, 255, 255)" ? color : "";
+    }
+
     function mergeSelected() {
       const ids = activeCellIds();
       if (ids.length < 2) return setStatus("Выберите несколько ячеек");
@@ -1812,8 +1817,10 @@
       if (expected !== parts.length) return setStatus("Нужно выделить прямоугольник ячеек");
       const master = `${section}-${minRow}-${minCol}`;
       const html = parts.map(p => state.cells[p.id]).filter(Boolean).join("<br>");
+      const bg = parts.map(p => meaningfulBg(state.bg[p.id])).find(Boolean);
       state.merged[master] = { rows: maxRow - minRow + 1, cols: maxCol - minCol + 1 };
       if (html) state.cells[master] = html;
+      if (bg) state.bg[master] = bg;
       for (const p of parts) {
         if (p.id !== master) state.hidden[p.id] = master;
       }
