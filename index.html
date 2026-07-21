@@ -1341,6 +1341,28 @@
       return applied;
     }
 
+    function releaseSize(values, targetIndexes, requestedDecrease, minValue) {
+      if (requestedDecrease <= .5) return 0;
+      const target = new Set(targetIndexes);
+      const recipients = values
+        .map((value, index) => ({ index, value }))
+        .filter(item => !target.has(item.index));
+      if (!recipients.length) return 0;
+      const targetSpare = targetIndexes.reduce((total, index) => total + Math.max(0, values[index] - minValue), 0);
+      const applied = Math.min(requestedDecrease, targetSpare);
+      if (applied <= .5) return 0;
+      targetIndexes.forEach(index => {
+        const spare = Math.max(0, values[index] - minValue);
+        values[index] -= applied * (spare / targetSpare);
+      });
+      const recipientTotal = recipients.reduce((total, item) => total + item.value, 0) || recipients.length;
+      recipients.forEach(item => {
+        const share = item.value / recipientTotal || 1 / recipients.length;
+        values[item.index] += applied * share;
+      });
+      return applied;
+    }
+
     function measureCellContent(el, width) {
       const probe = el.cloneNode(true);
       probe.classList.remove("selected");
@@ -1361,6 +1383,25 @@
       };
       probe.remove();
       return result;
+    }
+
+    function sameIndexes(a, b) {
+      return a.length === b.length && a.every((value, index) => value === b[index]);
+    }
+
+    function requiredHeightForRows(section, rowIndexes) {
+      let required = MIN_ROW * rowIndexes.length;
+      sheet.querySelectorAll(`.cell[data-section="${section.id}"]`).forEach(cell => {
+        if (state.hidden[cell.dataset.id]) return;
+        const merge = state.merged[cell.dataset.id] || { rows: 1, cols: 1 };
+        const cellRows = rangeIndexes(Number(cell.dataset.row), merge.rows);
+        if (!sameIndexes(cellRows, rowIndexes)) return;
+        const cellCols = rangeIndexes(Number(cell.dataset.col), merge.cols);
+        const width = sumByIndexes(state.colWidths, cellCols) + GAP_X * (merge.cols - 1);
+        const measured = measureCellContent(cell, width);
+        required = Math.max(required, measured.height + 4 - GAP_Y * (merge.rows - 1));
+      });
+      return required;
     }
 
     function autoFitCell(id) {
@@ -1404,8 +1445,19 @@
 
       const finalW = sumByIndexes(state.colWidths, colIndexes) + GAP_X * (merge.cols - 1);
       measured = measureCellContent(el, finalW);
-      const heightIncrease = Math.max(0, measured.height + 4 - currentH);
+      const currentRowTotal = sumByIndexes(parsed.section.rowHeights, rowIndexes);
+      const rowGaps = GAP_Y * (merge.rows - 1);
+      const desiredRowTotal = Math.max(
+        MIN_ROW * merge.rows,
+        measured.height + 4 - rowGaps,
+        requiredHeightForRows(parsed.section, rowIndexes)
+      );
+      const heightIncrease = Math.max(0, desiredRowTotal - currentRowTotal);
       if (redistributeSize(parsed.section.rowHeights, rowIndexes, heightIncrease, MIN_ROW) > 0) {
+        changed = true;
+      }
+      const heightDecrease = Math.max(0, currentRowTotal - desiredRowTotal);
+      if (releaseSize(parsed.section.rowHeights, rowIndexes, heightDecrease, MIN_ROW) > 0) {
         changed = true;
       }
       return changed;
