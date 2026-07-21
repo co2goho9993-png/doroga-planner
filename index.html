@@ -1904,20 +1904,60 @@
       startPinchZoom(event);
     }
 
+    function loadExternalScript(src) {
+      return new Promise((resolve, reject) => {
+        const existing = [...document.scripts].find(script => script.src === src);
+        if (existing) {
+          existing.addEventListener("load", resolve, { once: true });
+          existing.addEventListener("error", reject, { once: true });
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = src;
+        script.async = true;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error(`Script not loaded: ${src}`));
+        document.head.appendChild(script);
+      });
+    }
+
+    async function ensurePdfLibraries() {
+      if (!window.html2canvas) {
+        await loadExternalScript("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js");
+      }
+      if (!window.jspdf?.jsPDF) {
+        await loadExternalScript("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
+      }
+      if (!window.html2canvas || !window.jspdf?.jsPDF) {
+        throw new Error("PDF libraries are unavailable");
+      }
+    }
+
+    async function waitForFonts() {
+      if (!document.fonts?.ready) return;
+      await Promise.race([
+        document.fonts.ready,
+        new Promise(resolve => setTimeout(resolve, 3500))
+      ]);
+    }
+
     async function exportPdf() {
       setStatus("Рендер PDF...");
       selected.clear();
       render();
-      await document.fonts.ready;
       const oldScale = state.zoom;
       sheet.classList.add("exporting");
       try {
-        const canvas = await html2canvas(sheet, {
+        await ensurePdfLibraries();
+        await waitForFonts();
+        const canvas = await window.html2canvas(sheet, {
           scale: A3_400_SCALE,
           width: SHEET_W,
           height: SHEET_H,
           backgroundColor: "#ffffff",
           useCORS: true,
+          allowTaint: false,
+          removeContainer: true,
           logging: false
         });
         const img = canvas.toDataURL("image/png");
