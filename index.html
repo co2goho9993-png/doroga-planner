@@ -591,6 +591,7 @@
       position: absolute;
       z-index: 8;
       background: transparent;
+      touch-action: none;
     }
 
     .resize-col {
@@ -713,12 +714,35 @@
       border-radius: 6px;
     }
 
+    .editor-font-icon {
+      font-family: "PF Din Text Comp Pro", Arial, sans-serif;
+      font-size: 28px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .editor-font-icon.regular { font-weight: 400; }
+    .editor-font-icon.medium { font-weight: 500; }
+    .editor-font-icon.bold { font-weight: 700; }
+
+    .editor-font-icon.italic {
+      display: inline-block;
+      font-weight: 500;
+      font-style: italic;
+      transform: skewX(-13deg);
+    }
+
     .swatch {
       width: 46px;
       height: 46px;
       border: 1px solid rgba(255, 255, 255, .45);
       border-radius: 50%;
       background: var(--swatch);
+    }
+
+    .editor-tools .swatch[data-bg="#ffffff"],
+    .editor-tools .swatch[data-bg="#7dc8ee"] {
+      display: none;
     }
 
     .editor-area {
@@ -883,10 +907,10 @@
         <button class="icon-button" id="closeEditor" title="Закрыть">×</button>
       </div>
       <div class="editor-tools">
-        <button class="icon-button" data-font="font-regular" title="Regular">R</button>
-        <button class="icon-button" data-font="font-medium" title="Medium">M</button>
-        <button class="icon-button" data-font="font-bold" title="Bold">B</button>
-        <button class="icon-button" data-italic title="Italic">I</button>
+        <button class="icon-button" data-font="font-regular" title="Regular"><span class="editor-font-icon regular">R</span></button>
+        <button class="icon-button" data-font="font-medium" title="Medium"><span class="editor-font-icon medium">M</span></button>
+        <button class="icon-button" data-font="font-bold" title="Bold"><span class="editor-font-icon bold">B</span></button>
+        <button class="icon-button" data-italic title="Italic"><span class="editor-font-icon italic">i</span></button>
         <button class="icon-button" data-cmd="insertUnorderedList" title="Маркированный список">•</button>
         <button class="icon-button" data-cmd="insertOrderedList" title="Нумерованный список">1.</button>
         <button class="icon-button" data-insert="–" title="Среднее тире">–</button>
@@ -977,6 +1001,7 @@
     let selectMode = false;
     let panMode = false;
     let panDrag = null;
+    let pinchZoom = null;
     const selected = new Set();
 
     function htmlEscape(value) {
@@ -1589,7 +1614,9 @@
     }
 
     function startColResize(event) {
+      if (event.pointerType === "touch" || event.button !== 0) return;
       event.stopPropagation();
+      event.preventDefault();
       const col = Number(event.currentTarget.dataset.col);
       const startX = event.clientX;
       const startLeft = state.colWidths[col];
@@ -1613,7 +1640,9 @@
     }
 
     function startRowResize(event) {
+      if (event.pointerType === "touch" || event.button !== 0) return;
       event.stopPropagation();
+      event.preventDefault();
       const section = sections.find(s => s.id === event.currentTarget.dataset.section);
       const row = Number(event.currentTarget.dataset.row);
       const startY = event.clientY;
@@ -1713,6 +1742,54 @@
       const newScale = state.zoom / 100;
       stage.scrollLeft = sheetX * newScale - (event.clientX - rect.left);
       stage.scrollTop = sheetY * newScale - (event.clientY - rect.top);
+    }
+
+    function getTouchDistance(touches) {
+      return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+    }
+
+    function getTouchCenter(touches) {
+      return {
+        x: (touches[0].clientX + touches[1].clientX) / 2,
+        y: (touches[0].clientY + touches[1].clientY) / 2
+      };
+    }
+
+    function startPinchZoom(event) {
+      if (modal.classList.contains("open") || event.touches.length !== 2) return;
+      event.preventDefault();
+      panDrag = null;
+      stage.classList.remove("panning");
+      const oldScale = state.zoom / 100;
+      const rect = stage.getBoundingClientRect();
+      const center = getTouchCenter(event.touches);
+      pinchZoom = {
+        distance: getTouchDistance(event.touches),
+        zoom: state.zoom,
+        sheetX: (center.x - rect.left + stage.scrollLeft) / oldScale,
+        sheetY: (center.y - rect.top + stage.scrollTop) / oldScale,
+        offsetX: center.x - rect.left,
+        offsetY: center.y - rect.top
+      };
+    }
+
+    function movePinchZoom(event) {
+      if (!pinchZoom || modal.classList.contains("open") || event.touches.length !== 2) return;
+      event.preventDefault();
+      const distance = getTouchDistance(event.touches);
+      if (!distance || !pinchZoom.distance) return;
+      setZoom(pinchZoom.zoom * (distance / pinchZoom.distance));
+      const newScale = state.zoom / 100;
+      stage.scrollLeft = pinchZoom.sheetX * newScale - pinchZoom.offsetX;
+      stage.scrollTop = pinchZoom.sheetY * newScale - pinchZoom.offsetY;
+    }
+
+    function endPinchZoom(event) {
+      if (event.touches.length < 2) {
+        pinchZoom = null;
+        return;
+      }
+      startPinchZoom(event);
     }
 
     async function exportPdf() {
@@ -1885,6 +1962,10 @@
     });
 
     stage.addEventListener("wheel", zoomByWheel, { passive: false });
+    stage.addEventListener("touchstart", startPinchZoom, { passive: false });
+    stage.addEventListener("touchmove", movePinchZoom, { passive: false });
+    stage.addEventListener("touchend", endPinchZoom, { passive: false });
+    stage.addEventListener("touchcancel", endPinchZoom, { passive: false });
     stage.addEventListener("pointerdown", startPan, true);
     stage.addEventListener("click", event => {
       if (!panMode) return;
