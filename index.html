@@ -1344,6 +1344,16 @@
       return applied;
     }
 
+    function expandTargetSize(values, targetIndexes, requestedIncrease) {
+      if (requestedIncrease <= .5) return 0;
+      const targetTotal = sumByIndexes(values, targetIndexes) || targetIndexes.length;
+      targetIndexes.forEach(index => {
+        const share = values[index] / targetTotal || 1 / targetIndexes.length;
+        values[index] += requestedIncrease * share;
+      });
+      return requestedIncrease;
+    }
+
     function releaseSize(values, targetIndexes, requestedDecrease, minValue) {
       if (requestedDecrease <= .5) return 0;
       const target = new Set(targetIndexes);
@@ -1367,22 +1377,45 @@
     }
 
     function measureCellContent(el, width) {
-      const probe = el.cloneNode(true);
-      probe.classList.remove("selected");
+      const style = getComputedStyle(el);
+      const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+      const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+      const borderX = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+      const borderY = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+      const contentWidth = Math.max(1, width - padX - borderX);
+      const source = el.children.length === 1 && el.firstElementChild?.classList.contains("text-flow")
+        ? el.firstElementChild
+        : el;
+      const probe = document.createElement("div");
+      probe.className = "cell";
       probe.style.position = "absolute";
       probe.style.left = "-10000px";
       probe.style.top = "0";
-      probe.style.width = `${width}px`;
+      probe.style.width = `${contentWidth}px`;
       probe.style.height = "auto";
+      probe.style.display = "block";
+      probe.style.padding = "0";
+      probe.style.border = "0";
       probe.style.minHeight = "0";
       probe.style.maxHeight = "none";
       probe.style.visibility = "hidden";
       probe.style.pointerEvents = "none";
       probe.style.overflow = "visible";
+      probe.style.whiteSpace = "normal";
+      probe.style.overflowWrap = "anywhere";
+      probe.style.wordBreak = "normal";
+      probe.style.fontFamily = style.fontFamily;
+      probe.style.fontSize = style.fontSize;
+      probe.style.fontWeight = style.fontWeight;
+      probe.style.fontStyle = style.fontStyle;
+      probe.style.lineHeight = style.lineHeight;
+      probe.innerHTML = source.innerHTML;
       document.body.appendChild(probe);
+      const contentHeight = Math.ceil(probe.scrollHeight);
+      const contentScrollWidth = Math.ceil(probe.scrollWidth);
       const result = {
-        width: Math.ceil(probe.scrollWidth),
-        height: Math.ceil(probe.scrollHeight)
+        width: contentScrollWidth + padX + borderX,
+        height: contentHeight + padY + borderY
       };
       probe.remove();
       return result;
@@ -1456,7 +1489,11 @@
         requiredHeightForRows(parsed.section, rowIndexes)
       );
       const heightIncrease = Math.max(0, desiredRowTotal - currentRowTotal);
-      if (redistributeSize(parsed.section.rowHeights, rowIndexes, heightIncrease, MIN_ROW) > 0) {
+      const redistributedHeight = redistributeSize(parsed.section.rowHeights, rowIndexes, heightIncrease, MIN_ROW);
+      if (redistributedHeight > 0) {
+        changed = true;
+      }
+      if (expandTargetSize(parsed.section.rowHeights, rowIndexes, heightIncrease - redistributedHeight) > 0) {
         changed = true;
       }
       const heightDecrease = Math.max(0, currentRowTotal - desiredRowTotal);
