@@ -4,6 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Doroga 2026 Planner</title>
+  <link rel="preload" href="./fonts/ALS_Granate_Light_1.1.otf" as="font" type="font/otf" crossorigin>
+  <link rel="preload" href="./fonts/ALS_Granate_Regular_1.1.otf" as="font" type="font/otf" crossorigin>
+  <link rel="preload" href="./fonts/ALS_Granate_Bold_1.1.otf" as="font" type="font/otf" crossorigin>
+  <link rel="preload" href="./fonts/PFDinTextCompPro-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="./fonts/PFDinTextCompPro-Medium.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="./fonts/PFDinTextCompPro-Bold.ttf" as="font" type="font/ttf" crossorigin>
   <script src="./vendor/html2canvas.min.js"></script>
   <script src="./vendor/jspdf.umd.min.js"></script>
   <style>
@@ -11,61 +17,85 @@
       font-family: "ALS Granate";
       src: url("./fonts/ALS_Granate_Light_1.1.otf") format("opentype");
       font-weight: 300;
+      font-style: normal;
+      font-display: block;
     }
     @font-face {
       font-family: "ALS Granate Light";
       src: url("./fonts/ALS_Granate_Light_1.1.otf") format("opentype");
-      font-weight: 400;
+      font-weight: 300;
+      font-style: normal;
+      font-display: block;
     }
     @font-face {
       font-family: "ALS Granate";
       src: url("./fonts/ALS_Granate_Regular_1.1.otf") format("opentype");
       font-weight: 400;
+      font-style: normal;
+      font-display: block;
     }
     @font-face {
       font-family: "ALS Granate Regular";
       src: url("./fonts/ALS_Granate_Regular_1.1.otf") format("opentype");
       font-weight: 400;
+      font-style: normal;
+      font-display: block;
     }
     @font-face {
       font-family: "ALS Granate";
       src: url("./fonts/ALS_Granate_Bold_1.1.otf") format("opentype");
       font-weight: 700;
+      font-style: normal;
+      font-display: block;
     }
     @font-face {
       font-family: "ALS Granate Bold";
       src: url("./fonts/ALS_Granate_Bold_1.1.otf") format("opentype");
-      font-weight: 400;
+      font-weight: 700;
+      font-style: normal;
+      font-display: block;
     }
     @font-face {
       font-family: "PF Din Text Comp Pro";
       src: url("./fonts/PFDinTextCompPro-Medium.ttf") format("truetype");
       font-weight: 500;
+      font-style: normal;
+      font-display: block;
     }
     @font-face {
       font-family: "PF Din Text Comp Pro Medium";
       src: url("./fonts/PFDinTextCompPro-Medium.ttf") format("truetype");
-      font-weight: 400;
+      font-weight: 500;
+      font-style: normal;
+      font-display: block;
     }
     @font-face {
       font-family: "PF Din Text Comp Pro";
       src: url("./fonts/PFDinTextCompPro-Regular.ttf") format("truetype");
       font-weight: 400;
+      font-style: normal;
+      font-display: block;
     }
     @font-face {
       font-family: "PF Din Text Comp Pro Regular";
       src: url("./fonts/PFDinTextCompPro-Regular.ttf") format("truetype");
       font-weight: 400;
+      font-style: normal;
+      font-display: block;
     }
     @font-face {
       font-family: "PF Din Text Comp Pro";
       src: url("./fonts/PFDinTextCompPro-Bold.ttf") format("truetype");
       font-weight: 700;
+      font-style: normal;
+      font-display: block;
     }
     @font-face {
       font-family: "PF Din Text Comp Pro Bold";
       src: url("./fonts/PFDinTextCompPro-Bold.ttf") format("truetype");
-      font-weight: 400;
+      font-weight: 700;
+      font-style: normal;
+      font-display: block;
     }
 
     :root {
@@ -84,14 +114,16 @@
     }
 
     * { box-sizing: border-box; font-synthesis: none; }
-    html, body { margin: 0; min-height: 100%; background: #111827; color: #f8fafc; font-family: "ALS Granate Regular", "ALS Granate", Arial, sans-serif; }
+    html, body { margin: 0; width: 100%; height: 100%; min-height: 100%; overflow: hidden; background: #111827; color: #f8fafc; font-family: "ALS Granate", Arial, sans-serif; font-weight: 400; }
     button, input, select { font: inherit; }
     button { cursor: pointer; }
 
     .app {
+      height: 100vh;
       min-height: 100vh;
       display: grid;
       grid-template-rows: auto 1fr;
+      overflow: hidden;
       background:
         linear-gradient(180deg, #152033 0%, #0c111c 100%);
     }
@@ -118,7 +150,7 @@
 
     .brand {
       min-width: max-content;
-      font-family: "ALS Granate Bold", "ALS Granate", Arial, sans-serif;
+      font-family: "ALS Granate", Arial, sans-serif;
       font-weight: 700;
       font-size: 15px;
       color: #ffffff;
@@ -176,15 +208,23 @@
     }
     .zoom input { width: 150px; accent-color: #7dc8ee; }
 
+    .mobile-zoom {
+      display: none;
+    }
+
     .stage {
+      min-width: 0;
+      min-height: 0;
       overflow: auto;
       padding: 18px;
       touch-action: pan-x pan-y;
+      overscroll-behavior: contain;
     }
 
     .stage.pan-mode {
       cursor: grab;
       user-select: none;
+      touch-action: none;
     }
 
     .stage.pan-mode.panning {
@@ -253,9 +293,9 @@
       width: 359px;
       height: 164px;
       color: #fff;
-      font-family: "ALS Granate Light", "ALS Granate", Arial, sans-serif;
+      font-family: "ALS Granate", Arial, sans-serif;
       font-size: 31px;
-      font-weight: 400;
+      font-weight: 300;
       display: flex;
       align-items: center;
     }
@@ -266,9 +306,9 @@
       width: 3931px;
       height: 164px;
       color: #fff;
-      font-family: "ALS Granate Bold", "ALS Granate", Arial, sans-serif;
+      font-family: "ALS Granate", Arial, sans-serif;
       font-size: 50px;
-      font-weight: 400;
+      font-weight: 700;
       text-align: center;
       display: flex;
       align-items: center;
@@ -320,9 +360,9 @@
       width: 323px;
       height: 109px;
       color: var(--blue);
-      font-family: "ALS Granate Light", "ALS Granate", Arial, sans-serif;
+      font-family: "ALS Granate", Arial, sans-serif;
       font-size: 31px;
-      font-weight: 400;
+      font-weight: 300;
       display: flex;
       align-items: center;
       line-height: 1.05;
@@ -333,9 +373,9 @@
       top: 0;
       height: 109px;
       color: var(--blue);
-      font-family: "ALS Granate Bold", "ALS Granate", Arial, sans-serif;
+      font-family: "ALS Granate", Arial, sans-serif;
       font-size: 31px;
-      font-weight: 400;
+      font-weight: 700;
       display: flex;
       align-items: center;
       line-height: 1.02;
@@ -349,9 +389,9 @@
       width: 135px;
       background: var(--blue);
       color: #fff;
-      font-family: "ALS Granate Bold", "ALS Granate", Arial, sans-serif;
+      font-family: "ALS Granate", Arial, sans-serif;
       font-size: 54px;
-      font-weight: 400;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -374,14 +414,14 @@
 
     .date-stripe .date-main {
       color: #ffffff;
-      font-family: "ALS Granate Bold", "ALS Granate", Arial, sans-serif;
-      font-weight: 400;
+      font-family: "ALS Granate", Arial, sans-serif;
+      font-weight: 700;
     }
 
     .date-stripe .date-weekday {
       color: #98daef;
-      font-family: "ALS Granate Light", "ALS Granate", Arial, sans-serif;
-      font-weight: 400;
+      font-family: "ALS Granate", Arial, sans-serif;
+      font-weight: 300;
       font-size: .74em;
       margin-top: 10px;
     }
@@ -392,9 +432,9 @@
       width: 267px;
       background: var(--hall);
       color: #000;
-      font-family: "PF Din Text Comp Pro Medium", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-family: "PF Din Text Comp Pro", Arial, sans-serif;
       font-size: 30px;
-      font-weight: 400;
+      font-weight: 500;
       font-synthesis: none;
       display: flex;
       flex-direction: column;
@@ -411,14 +451,14 @@
 
     .venue-title {
       display: block;
-      font-family: "PF Din Text Comp Pro Medium", "PF Din Text Comp Pro", Arial, sans-serif;
-      font-weight: 400;
+      font-family: "PF Din Text Comp Pro", Arial, sans-serif;
+      font-weight: 500;
       line-height: inherit;
     }
 
     .venue-note {
       display: block;
-      font-family: "PF Din Text Comp Pro Regular", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-family: "PF Din Text Comp Pro", Arial, sans-serif;
       font-weight: 400;
       line-height: inherit;
     }
@@ -429,7 +469,7 @@
       background: #ffffff;
       color: #111827;
       padding: 10px 12px;
-      font-family: "PF Din Text Comp Pro Regular", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-family: "PF Din Text Comp Pro", Arial, sans-serif;
       font-size: 24px;
       line-height: 1.08;
       font-synthesis: none;
@@ -445,8 +485,8 @@
     .legend-chip strong,
     .editor-area b,
     .editor-area strong {
-      font-family: "PF Din Text Comp Pro Bold", "PF Din Text Comp Pro", Arial, sans-serif;
-      font-weight: 400;
+      font-family: "PF Din Text Comp Pro", Arial, sans-serif;
+      font-weight: 700;
       line-height: inherit;
     }
 
@@ -454,7 +494,7 @@
     .cell .font-regular,
     .legend-chip .font-regular,
     .editor-area .font-regular {
-      font-family: "PF Din Text Comp Pro Regular", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-family: "PF Din Text Comp Pro", Arial, sans-serif;
       font-weight: 400;
     }
 
@@ -462,16 +502,16 @@
     .cell .font-medium,
     .legend-chip .font-medium,
     .editor-area .font-medium {
-      font-family: "PF Din Text Comp Pro Medium", "PF Din Text Comp Pro", Arial, sans-serif;
-      font-weight: 400;
+      font-family: "PF Din Text Comp Pro", Arial, sans-serif;
+      font-weight: 500;
     }
 
     .venue .font-bold,
     .cell .font-bold,
     .legend-chip .font-bold,
     .editor-area .font-bold {
-      font-family: "PF Din Text Comp Pro Bold", "PF Din Text Comp Pro", Arial, sans-serif;
-      font-weight: 400;
+      font-family: "PF Din Text Comp Pro", Arial, sans-serif;
+      font-weight: 700;
     }
 
     .venue .font-italic,
@@ -492,14 +532,14 @@
     .editable .font-regular,
     .time-cell .font-regular,
     .date-stripe .font-regular {
-      font-family: "ALS Granate Regular", "ALS Granate", Arial, sans-serif;
+      font-family: "ALS Granate", Arial, sans-serif;
       font-weight: 400;
     }
 
     .editable .font-medium,
     .time-cell .font-medium,
     .date-stripe .font-medium {
-      font-family: "ALS Granate Regular", "ALS Granate", Arial, sans-serif;
+      font-family: "ALS Granate", Arial, sans-serif;
       font-weight: 400;
     }
 
@@ -512,8 +552,8 @@
     .time-cell strong,
     .date-stripe b,
     .date-stripe strong {
-      font-family: "ALS Granate Bold", "ALS Granate", Arial, sans-serif;
-      font-weight: 400;
+      font-family: "ALS Granate", Arial, sans-serif;
+      font-weight: 700;
     }
 
     .editable .font-italic,
@@ -577,9 +617,9 @@
       width: 270px;
       height: 109px;
       color: var(--muted);
-      font-family: "ALS Granate Light", "ALS Granate", Arial, sans-serif;
+      font-family: "ALS Granate", Arial, sans-serif;
       font-size: 31px;
-      font-weight: 400;
+      font-weight: 300;
       display: flex;
       align-items: center;
       line-height: 1.05;
@@ -590,7 +630,7 @@
       top: 3363px;
       height: 91px;
       border: 2px solid var(--blue-soft);
-      font-family: "PF Din Text Comp Pro Regular", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-family: "PF Din Text Comp Pro", Arial, sans-serif;
       font-size: 30px;
       font-weight: 400;
       font-synthesis: none;
@@ -688,7 +728,8 @@
       outline: 0;
       background: #111827;
       color: #f8fafc;
-      font-family: "PF Din Text Comp Pro Regular", "PF Din Text Comp Pro", Arial, sans-serif;
+      font-family: "PF Din Text Comp Pro", Arial, sans-serif;
+      font-weight: 400;
       font-size: 40px;
       line-height: 1.2;
       white-space: pre-wrap;
@@ -725,9 +766,43 @@
         gap: 8px;
       }
       .brand { display: none; }
-      .stage { padding: 10px; }
+      .toolbar .zoom { display: none; }
+      .stage { padding: 10px 10px 78px; }
       .tool-button { height: 34px; padding: 0 10px; }
-      .zoom input { width: 100px; }
+      .mobile-zoom {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 56px;
+        padding: 8px 10px;
+        border: 1px solid rgba(255, 255, 255, .16);
+        border-radius: 8px;
+        background: rgba(13, 20, 34, .96);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, .32);
+        backdrop-filter: blur(14px);
+      }
+      .mobile-zoom .icon-button {
+        flex: 0 0 40px;
+        width: 40px;
+        height: 40px;
+        font-size: 21px;
+      }
+      .mobile-zoom input {
+        flex: 1 1 auto;
+        min-width: 0;
+        accent-color: #7dc8ee;
+      }
+      .mobile-zoom-value {
+        flex: 0 0 44px;
+        color: #cbd5e1;
+        font-size: 13px;
+        text-align: right;
+      }
     }
 
     @page {
@@ -736,8 +811,10 @@
     }
 
     @media print {
+      html, body { height: auto; overflow: visible; }
       body { background: #fff; }
-      .toolbar, .modal { display: none !important; }
+      .app { height: auto; min-height: 0; overflow: visible; }
+      .toolbar, .modal, .mobile-zoom { display: none !important; }
       .stage { padding: 0; overflow: visible; }
       .sheet-wrap { width: 420mm; height: 297mm; }
       .sheet {
@@ -791,6 +868,12 @@
         <section class="sheet" id="sheet" aria-label="A3 planner sheet"></section>
       </div>
     </main>
+    <div class="mobile-zoom" id="mobileZoom" aria-label="Масштаб">
+      <button class="icon-button" id="zoomOutBtn" title="Уменьшить масштаб">-</button>
+      <input id="mobileZoomRange" type="range" min="8" max="80" value="18" title="Масштаб">
+      <button class="icon-button" id="zoomInBtn" title="Увеличить масштаб">+</button>
+      <span class="mobile-zoom-value" id="zoomValue">18%</span>
+    </div>
   </div>
 
   <div class="modal" id="modal" role="dialog" aria-modal="true">
@@ -883,6 +966,8 @@
     const stage = document.getElementById("stage");
     const statusEl = document.getElementById("status");
     const zoomRange = document.getElementById("zoomRange");
+    const mobileZoomRange = document.getElementById("mobileZoomRange");
+    const zoomValue = document.getElementById("zoomValue");
     const modal = document.getElementById("modal");
     const editorArea = document.getElementById("editorArea");
     const editorTitle = document.getElementById("editorTitle");
@@ -1559,9 +1644,15 @@
       document.getElementById("sheetWrap").style.height = `${SHEET_H * scale}px`;
     }
 
+    function syncZoomControls() {
+      zoomRange.value = state.zoom;
+      mobileZoomRange.value = state.zoom;
+      zoomValue.textContent = `${state.zoom}%`;
+    }
+
     function setZoom(value) {
       state.zoom = Math.max(8, Math.min(80, Math.round(value)));
-      zoomRange.value = state.zoom;
+      syncZoomControls();
       applyScale();
     }
 
@@ -1578,11 +1669,13 @@
     }
 
     function startPan(event) {
-      if (!panMode || modal.classList.contains("open") || event.button !== 0) return;
+      if (!panMode || modal.classList.contains("open") || (event.button !== 0 && event.pointerType !== "touch")) return;
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
+      stage.setPointerCapture?.(event.pointerId);
       panDrag = {
+        id: event.pointerId,
         x: event.clientX,
         y: event.clientY,
         left: stage.scrollLeft,
@@ -1596,6 +1689,7 @@
         stage.scrollTop = panDrag.top - (moveEvent.clientY - panDrag.y);
       };
       const up = () => {
+        if (panDrag?.id !== undefined) stage.releasePointerCapture?.(panDrag.id);
         panDrag = null;
         stage.classList.remove("panning");
         window.removeEventListener("pointermove", move, true);
@@ -1652,8 +1746,7 @@
         setStatus("Ошибка PDF");
       } finally {
         sheet.classList.remove("exporting");
-        state.zoom = oldScale;
-        zoomRange.value = oldScale;
+        setZoom(oldScale);
         render();
       }
     }
@@ -1681,7 +1774,7 @@
             });
           }
           selected.clear();
-          zoomRange.value = state.zoom;
+          setZoom(state.zoom);
           render();
           setStatus("Состояние загружено");
         } catch (error) {
@@ -1781,6 +1874,15 @@
     zoomRange.addEventListener("input", event => {
       setZoom(Number(event.target.value));
     });
+    mobileZoomRange.addEventListener("input", event => {
+      setZoom(Number(event.target.value));
+    });
+    document.getElementById("zoomOutBtn").addEventListener("click", () => {
+      setZoom(state.zoom - 3);
+    });
+    document.getElementById("zoomInBtn").addEventListener("click", () => {
+      setZoom(state.zoom + 3);
+    });
 
     stage.addEventListener("wheel", zoomByWheel, { passive: false });
     stage.addEventListener("pointerdown", startPan, true);
@@ -1791,13 +1893,7 @@
       event.stopImmediatePropagation();
     }, true);
 
-    window.addEventListener("resize", () => {
-      if (window.innerWidth < 760 && state.zoom > 20) {
-        state.zoom = 18;
-        zoomRange.value = state.zoom;
-        applyScale();
-      }
-    });
+    window.addEventListener("resize", applyScale);
 
     render();
   </script>
