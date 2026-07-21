@@ -1503,6 +1503,26 @@
       return changed;
     }
 
+    function filledCellIds() {
+      return [...sheet.querySelectorAll(".cell")]
+        .filter(cell => !state.hidden[cell.dataset.id] && (state.cells[cell.dataset.id] || "").trim())
+        .map(cell => cell.dataset.id);
+    }
+
+    function autoFitFilledCells(maxPasses = 4) {
+      let changed = false;
+      for (let pass = 0; pass < maxPasses; pass++) {
+        let passChanged = false;
+        filledCellIds().forEach(id => {
+          if (autoFitCell(id)) passChanged = true;
+        });
+        if (!passChanged) break;
+        changed = true;
+        render();
+      }
+      return changed;
+    }
+
     function makeEditable(id, label, x, y, w, h, className, html, fontSize) {
       const el = document.createElement("div");
       el.className = `editable ${className || ""}`;
@@ -1763,8 +1783,10 @@
       }
       closeEditor();
       render();
-      if (shouldAutoFitCell && autoFitCell(id)) {
-        render();
+      if (shouldAutoFitCell) {
+        const changed = autoFitCell(id);
+        const allChanged = autoFitFilledCells();
+        if (changed || allChanged) render();
         setStatus("РЇС‡РµР№РєР° РїРѕРґСЃС‚СЂРѕРµРЅР° РїРѕРґ С‚РµРєСЃС‚");
       }
     }
@@ -2097,6 +2119,7 @@
           selected.clear();
           setZoom(state.zoom);
           render();
+          if (autoFitFilledCells()) render();
           setStatus("Состояние загружено");
         } catch (error) {
           setStatus("JSON не прочитан");
