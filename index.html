@@ -392,9 +392,7 @@
       font-family: "ALS Granate", Arial, sans-serif;
       font-size: 54px;
       font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      overflow: hidden;
       letter-spacing: 0;
       white-space: pre-line;
       line-height: 1;
@@ -402,12 +400,15 @@
     }
 
     .date-stripe .date-stack {
+      position: absolute;
+      left: 50%;
+      top: 50%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       width: max-content;
-      transform: rotate(-90deg);
+      transform: translate(-50%, -50%) rotate(-90deg);
       transform-origin: center;
       white-space: nowrap;
     }
@@ -976,7 +977,7 @@
     ];
 
     const sections = [
-      { id: "s0", headerY: 167, bodyY: 285, stripeY: 285, stripeH: 310, date: "13 октября\nвторник", rowHeights: [310], venue: ["Выставочный\nпавильон"] },
+      { id: "s0", headerY: 167, bodyY: 285, stripeY: 285, stripeH: 310, date: "12 октября\nпонедельник", rowHeights: [310], venue: ["Выставочный\nпавильон"] },
       { id: "s1", headerY: 606, bodyY: 726, stripeY: 726, stripeH: 805, date: "13 октября\nвторник", rowHeights: Array(8).fill(91), venue: ["Выставочный\nпавильон", "Пресс-Центр", "Зал Краснодар\n(380чел)", "Зал Сочи\n(150 чел)", "Зал Анапа\n(150 чел)", "Зал Сириус\n(круглый стол 60 чел)", "Зал Дагомыс\n(70 чел)", ""] },
       { id: "s2", headerY: 1542, bodyY: 1662, stripeY: 1662, stripeH: 805, date: "14 октября\nсреда", rowHeights: Array(8).fill(91), venue: ["Выставочный\nпавильон", "Пресс-Центр", "Зал Краснодар\n(380чел)", "Зал Сочи\n(150 чел)", "Зал Анапа\n(150 чел)", "Зал Сириус\n(круглый стол 60 чел)", "Зал Дагомыс\n(70 чел)", ""] },
       { id: "s3", headerY: 2478, bodyY: 2598, stripeY: 2598, stripeH: 703, date: "15 октября\nчетверг", rowHeights: Array(7).fill(91), venue: ["Выставочный\nпавильон", "Пресс-Центр", "Зал Краснодар\n(380чел)", "Зал Сочи\n(150 чел)", "Зал Анапа\n(150 чел)", "Зал Сириус\n(круглый стол 60 чел)", "Зал Дагомыс\n(70 чел)"] }
@@ -1021,6 +1022,9 @@
     }
 
     function editorHtmlFromElement(el) {
+      if (el.classList.contains("date-stripe")) {
+        return htmlEscape(dateTextFromHtml(el.innerHTML)).replace(/\n/g, "<br>");
+      }
       const flow = el.children.length === 1 && el.firstElementChild?.classList.contains("text-flow")
         ? el.firstElementChild
         : null;
@@ -1096,6 +1100,7 @@
       const id = el.dataset.id;
       if (el.classList.contains("time-cell")) return state.groupFontSize.timeCells || state.fontSize[id] || fallback;
       if (el.classList.contains("venue")) return state.groupFontSize.venues || state.fontSize[id] || fallback;
+      if (el.classList.contains("date-stripe")) return state.fontSize[id] || 44;
       return state.fontSize[id] || fallback;
     }
 
@@ -1107,9 +1112,45 @@
       });
     }
 
+    function normalizeDateText(value, fallback = "") {
+      const text = String(value || fallback)
+        .replace(/[ \t]+/g, " ")
+        .replace(/[ \t]*\n[ \t]*/g, "\n")
+        .replace(/\n{2,}/g, "\n")
+        .trim();
+      if (!text) return fallback;
+      const lines = text.split("\n").map(line => line.trim()).filter(Boolean);
+      if (lines.length <= 1) {
+        const weekday = "(понедельник|вторник|среда|четверг|пятница|суббота|воскресенье)";
+        const match = (lines[0] || "").match(new RegExp(`^(.*?)\\s*${weekday}$`, "i"));
+        if (match && match[1].trim()) return `${match[1].trim()}\n${match[2].trim()}`;
+        return lines[0] || fallback;
+      }
+      return `${lines[0]}\n${lines.slice(1).join(" ")}`;
+    }
+
     function dateMarkup(value) {
-      const [main, weekday] = String(value).split(/\n/);
+      const [main, ...rest] = normalizeDateText(value).split(/\n/);
+      const weekday = rest.join(" ");
       return `<span class="date-stack"><span class="date-main">${htmlEscape(main || "")}</span>${weekday ? `<span class="date-weekday">${htmlEscape(weekday)}</span>` : ""}</span>`;
+    }
+
+    function dateTextFromHtml(html, fallback = "") {
+      const holder = document.createElement("div");
+      holder.innerHTML = String(html || "");
+      const main = holder.querySelector(".date-main")?.textContent?.trim();
+      const weekday = holder.querySelector(".date-weekday")?.textContent?.trim();
+      if (main || weekday) return normalizeDateText([main, weekday].filter(Boolean).join("\n"), fallback);
+      const text = normalizeTypographyText(textFromEditorHtml(html || fallback))
+        .replace(/[ \t]+/g, " ")
+        .replace(/[ \t]*\n[ \t]*/g, "\n")
+        .replace(/\n{2,}/g, "\n")
+        .trim();
+      return normalizeDateText(text, fallback);
+    }
+
+    function dateMarkupFromHtml(html, fallback = "") {
+      return dateMarkup(dateTextFromHtml(html, fallback));
     }
 
     function normalizeTypography(root) {
@@ -1143,6 +1184,7 @@
       const holder = document.createElement("div");
       holder.innerHTML = String(html)
         .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<(div|p)\b[^>]*>/gi, "\n")
         .replace(/<\/(div|p)>/gi, "\n");
       return holder.textContent;
     }
@@ -1338,6 +1380,23 @@
 
     function fitVenueGroup() {
       fitElementsInside(sheet.querySelectorAll(".venue"), 20);
+    }
+
+    function fitDateStripes() {
+      sheet.querySelectorAll(".date-stripe").forEach(stripe => {
+        const stack = stripe.querySelector(".date-stack");
+        if (!stack) return;
+        let size = parseInt(stripe.dataset.baseFontSize, 10) || parseInt(stripe.style.fontSize, 10) || 44;
+        const minSize = 18;
+        stripe.style.fontSize = `${size}px`;
+        const maxVisualHeight = Math.max(1, stripe.clientHeight - 14);
+        const maxVisualWidth = Math.max(1, stripe.clientWidth - 14);
+        const hasOverflow = () => stack.scrollWidth > maxVisualHeight + 1 || stack.scrollHeight > maxVisualWidth + 1;
+        while (size > minSize && hasOverflow()) {
+          size -= 1;
+          stripe.style.fontSize = `${size}px`;
+        }
+      });
     }
 
     function parseCellId(id) {
@@ -1752,8 +1811,10 @@
       stripe.dataset.id = `${section.id}-date`;
       stripe.dataset.label = "Дата";
       styleBox(stripe, 0, section.stripeY, 135, section.stripeH);
-      stripe.style.fontSize = `${state.fontSize[stripe.dataset.id] || 44}px`;
-      stripe.innerHTML = state.text[stripe.dataset.id] ?? dateMarkup(section.date);
+      const baseDateFontSize = state.fontSize[stripe.dataset.id] || 44;
+      stripe.dataset.baseFontSize = baseDateFontSize;
+      stripe.style.fontSize = `${baseDateFontSize}px`;
+      stripe.innerHTML = dateMarkupFromHtml(state.text[stripe.dataset.id], section.date);
       stripe.addEventListener("click", event => {
         event.stopPropagation();
         openEditor(stripe);
@@ -1833,7 +1894,11 @@
       renderHeader();
       sections.forEach(renderSection);
       fitVenueGroup();
-      document.fonts?.ready.then(fitVenueGroup);
+      fitDateStripes();
+      document.fonts?.ready.then(() => {
+        fitVenueGroup();
+        fitDateStripes();
+      });
       renderLegend();
       applyScale();
     }
@@ -1868,6 +1933,8 @@
       if (activeTarget.classList.contains("cell")) {
         state.cells[id] = sanitizeEditorHtml(editorArea.innerHTML);
         state.bg[id] = activeTarget.dataset.nextBg || state.bg[id] || activeTarget.style.backgroundColor || "#ffffff";
+      } else if (activeTarget.classList.contains("date-stripe")) {
+        state.text[id] = dateMarkupFromHtml(editorArea.innerHTML, "");
       } else if (activeTarget.classList.contains("venue")) {
         state.text[id] = sanitizeVenueHtml(editorArea.innerHTML);
       } else {
@@ -1888,7 +1955,7 @@
       render();
       if (shouldAutoFitCell) {
         if (autoFitFilledCells()) render();
-        setStatus("РЇС‡РµР№РєР° РїРѕРґСЃС‚СЂРѕРµРЅР° РїРѕРґ С‚РµРєСЃС‚");
+        setStatus("Ячейка подстроена под текст");
       }
     }
 
