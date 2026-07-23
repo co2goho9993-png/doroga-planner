@@ -187,6 +187,50 @@
       border-color: #ffffff;
     }
     .toolbar .export-button { margin-left: auto; }
+    .mode-switch,
+    .day-pager {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 3px;
+      height: 40px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, .06);
+    }
+
+    .mode-switch { margin-left: auto; }
+
+    .mode-switch .tool-button,
+    .day-pager .tool-button {
+      height: 32px;
+      border-color: transparent;
+      background: transparent;
+      padding: 0 10px;
+    }
+
+    .mode-switch .tool-button.active,
+    .day-pager .tool-button:active {
+      background: #2f5dd3;
+      border-color: #3c6cef;
+    }
+
+    .day-pager .tool-button:disabled {
+      cursor: default;
+      opacity: .38;
+    }
+
+    .day-pager[hidden] { display: none; }
+
+    .day-indicator {
+      min-width: 54px;
+      color: #dbeafe;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .toolbar .export-button { margin-left: 0; }
     .tool-button svg,
     .zoom svg {
       width: 18px;
@@ -886,6 +930,15 @@
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
         Загрузить
       </button>
+      <div class="mode-switch" role="group" aria-label="Режим просмотра">
+        <button class="tool-button active" id="modeGeneralBtn" type="button">Общий</button>
+        <button class="tool-button" id="modeDaysBtn" type="button">По дням</button>
+      </div>
+      <div class="day-pager" id="dayPager" hidden>
+        <button class="tool-button" id="prevDayBtn" type="button" title="Предыдущий день">←</button>
+        <span class="day-indicator" id="dayIndicator">1 / 4</span>
+        <button class="tool-button" id="nextDayBtn" type="button" title="Следующий день">→</button>
+      </div>
       <button class="tool-button primary export-button" id="pdfBtn" title="PDF A3 400dpi">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M8 15h8M8 18h5"/></svg>
         PDF A3 400dpi
@@ -955,6 +1008,9 @@
     const LEGEND_TITLE_Y = 3354;
     const LEGEND_CHIP_Y = 3363;
     const TABLE_BOTTOM_LIMIT = 3301;
+    const DAY_HEADER_Y = 167;
+    const DAY_BODY_Y = 285;
+    const DAY_TABLE_BOTTOM = TABLE_BOTTOM_LIMIT;
 
     const colors = {
       blue: "#234497",
@@ -1001,6 +1057,13 @@
     const zoomRange = document.getElementById("zoomRange");
     const mobileZoomRange = document.getElementById("mobileZoomRange");
     const zoomValue = document.getElementById("zoomValue");
+    const modeGeneralBtn = document.getElementById("modeGeneralBtn");
+    const modeDaysBtn = document.getElementById("modeDaysBtn");
+    const dayPager = document.getElementById("dayPager");
+    const dayIndicator = document.getElementById("dayIndicator");
+    const prevDayBtn = document.getElementById("prevDayBtn");
+    const nextDayBtn = document.getElementById("nextDayBtn");
+    const pdfBtn = document.getElementById("pdfBtn");
     const modal = document.getElementById("modal");
     const editorArea = document.getElementById("editorArea");
     const editorTitle = document.getElementById("editorTitle");
@@ -1011,6 +1074,8 @@
     let panMode = false;
     let panDrag = null;
     let pinchZoom = null;
+    let viewMode = "general";
+    let currentDayIndex = 0;
     const selected = new Set();
 
     function htmlEscape(value) {
@@ -1060,6 +1125,29 @@
       return section.rowHeights.reduce((total, height) => total + height, 0) + GAP_Y * Math.max(0, section.rowHeights.length - 1);
     }
 
+    function dailyRowHeights(section) {
+      const rowCount = section.rowHeights.length;
+      const available = DAY_TABLE_BOTTOM - DAY_BODY_Y - GAP_Y * Math.max(0, rowCount - 1);
+      const sourceTotal = section.rowHeights.reduce((total, height) => total + height, 0) || rowCount;
+      return section.rowHeights.map(height => Math.max(MIN_ROW, available * height / sourceTotal));
+    }
+
+    function dailySectionLayout(section) {
+      const rowHeights = dailyRowHeights(section);
+      return {
+        ...section,
+        headerY: DAY_HEADER_Y,
+        bodyY: DAY_BODY_Y,
+        stripeY: DAY_BODY_Y,
+        rowHeights,
+        stripeH: rowHeights.reduce((total, height) => total + height, 0) + GAP_Y * Math.max(0, rowHeights.length - 1)
+      };
+    }
+
+    function scaledFontSize(size, scale, max = 96) {
+      return Math.round(Math.min(max, Math.max(10, size * scale)));
+    }
+
     function tableBottomY() {
       refreshSectionLayout();
       const last = sections[sections.length - 1];
@@ -1101,6 +1189,7 @@
       if (el.classList.contains("time-cell")) return state.groupFontSize.timeCells || state.fontSize[id] || fallback;
       if (el.classList.contains("venue")) return state.groupFontSize.venues || state.fontSize[id] || fallback;
       if (el.classList.contains("date-stripe")) return state.fontSize[id] || 44;
+      if (el.classList.contains("time-label")) return state.fontSize[id] || 31;
       return state.fontSize[id] || fallback;
     }
 
@@ -1665,17 +1754,21 @@
     }
 
     function autoFitFilledCells() {
+      if (viewMode === "days") return false;
       return fitRowsToText();
     }
 
-    function makeEditable(id, label, x, y, w, h, className, html, fontSize) {
+    function makeEditable(id, label, x, y, w, h, className, html, fontSize, options = {}) {
       const el = document.createElement("div");
       el.className = `editable ${className || ""}`;
       el.dataset.id = id;
       el.dataset.label = label;
       styleBox(el, x, y, w, h);
       el.innerHTML = flowHtml(state.text[id] ?? html);
-      if (fontSize) el.style.fontSize = `${state.fontSize[id] || fontSize}px`;
+      if (fontSize) {
+        const baseFontSize = state.fontSize[id] || fontSize;
+        el.style.fontSize = `${options.fontScale ? scaledFontSize(baseFontSize, options.fontScale) : baseFontSize}px`;
+      }
       el.addEventListener("click", event => {
         event.stopPropagation();
         openEditor(el);
@@ -1684,7 +1777,7 @@
       return el;
     }
 
-    function makeCell(id, section, row, col) {
+    function makeCell(id, section, row, col, options = {}) {
       const el = document.createElement("div");
       el.className = "cell";
       el.dataset.id = id;
@@ -1706,8 +1799,11 @@
       if (state.hidden[id]) el.classList.add("hidden-cell");
       if (selected.has(id)) el.classList.add("selected");
       el.style.background = state.bg[id] || "#ffffff";
-      el.style.fontSize = `${state.fontSize[id] || 24}px`;
-      el.innerHTML = flowHtml(state.cells[id] || "");
+      const baseFontSize = state.fontSize[id] || 24;
+      const cellHtml = state.cells[id] || "";
+      const hasContent = Boolean(cellHtml.trim());
+      el.style.fontSize = `${options.fontScale && hasContent ? scaledFontSize(baseFontSize, options.fontScale, 72) : baseFontSize}px`;
+      el.innerHTML = flowHtml(cellHtml);
       el.addEventListener("click", event => {
         event.stopPropagation();
         if (selectMode || event.ctrlKey || event.shiftKey) {
@@ -1722,14 +1818,15 @@
       return el;
     }
 
-    function makeVenue(id, section, row, text) {
+    function makeVenue(id, section, row, text, options = {}) {
       const el = document.createElement("div");
       el.className = "venue";
       el.dataset.id = id;
       el.dataset.label = "Место проведения";
       const y = yForRow(section, row);
       styleBox(el, VENUE_X, y + 0.1, VENUE_W, section.rowHeights[row]);
-      el.style.fontSize = `${state.groupFontSize.venues || state.fontSize[id] || 30}px`;
+      const baseFontSize = state.groupFontSize.venues || state.fontSize[id] || 30;
+      el.style.fontSize = `${options.fontScale ? scaledFontSize(baseFontSize, options.fontScale, 72) : baseFontSize}px`;
       el.innerHTML = sanitizeVenueHtml(state.text[id] ?? htmlEscape(text));
       el.addEventListener("click", event => {
         event.stopPropagation();
@@ -1782,7 +1879,7 @@
       });
     }
 
-    function renderTimeHeader(section) {
+    function renderTimeHeader(section, options = {}) {
       const header = document.createElement("div");
       header.className = "time-header";
       header.style.top = `${section.headerY}px`;
@@ -1794,7 +1891,8 @@
         el.dataset.id = `${section.id}-time-${col}`;
         el.dataset.label = "Время";
         styleBox(el, xForCol(col), section.headerY, state.colWidths[col], 109);
-        el.style.fontSize = `${state.groupFontSize.timeCells || state.fontSize[el.dataset.id] || 31}px`;
+        const baseFontSize = state.groupFontSize.timeCells || state.fontSize[el.dataset.id] || 31;
+        el.style.fontSize = `${baseFontSize}px`;
         el.innerHTML = flowHtml(state.text[el.dataset.id] ?? htmlEscape(label));
         el.addEventListener("click", event => {
           event.stopPropagation();
@@ -1804,8 +1902,9 @@
       });
     }
 
-    function renderSection(section) {
-      renderTimeHeader(section);
+    function renderSection(section, options = {}) {
+      const allowResize = options.resizable !== false;
+      renderTimeHeader(section, options);
       const stripe = document.createElement("div");
       stripe.className = "date-stripe";
       stripe.dataset.id = `${section.id}-date`;
@@ -1824,9 +1923,13 @@
       section.rowHeights.forEach((_, row) => {
         makeVenue(`${section.id}-venue-${row}`, section, row, section.venue[row] || "");
         for (let col = 0; col < state.colWidths.length; col++) {
-          makeCell(`${section.id}-${row}-${col}`, section, row, col);
+          makeCell(`${section.id}-${row}-${col}`, section, row, col, {
+            fontScale: options.daily ? 1.55 : 1
+          });
         }
       });
+
+      if (!allowResize) return;
 
       for (let col = 0; col < state.colWidths.length - 1; col++) {
         const handle = document.createElement("div");
@@ -1888,11 +1991,32 @@
       });
     }
 
+    function syncModeControls() {
+      const daysMode = viewMode === "days";
+      modeGeneralBtn.classList.toggle("active", !daysMode);
+      modeDaysBtn.classList.toggle("active", daysMode);
+      dayPager.hidden = !daysMode;
+      dayIndicator.textContent = `${currentDayIndex + 1} / ${sections.length}`;
+      prevDayBtn.disabled = currentDayIndex <= 0;
+      nextDayBtn.disabled = currentDayIndex >= sections.length - 1;
+      pdfBtn.title = daysMode ? "Многостраничный PDF A3 400dpi" : "PDF A3 400dpi";
+    }
+
+    function renderDailyPage() {
+      const section = dailySectionLayout(sections[currentDayIndex]);
+      renderSection(section, { daily: true, resizable: false });
+    }
+
     function render() {
       refreshSectionLayout();
       sheet.innerHTML = "";
+      sheet.classList.toggle("days-mode", viewMode === "days");
       renderHeader();
-      sections.forEach(renderSection);
+      if (viewMode === "days") {
+        renderDailyPage();
+      } else {
+        sections.forEach(section => renderSection(section, { resizable: true }));
+      }
       fitVenueGroup();
       fitDateStripes();
       document.fonts?.ready.then(() => {
@@ -1900,6 +2024,7 @@
         fitDateStripes();
       });
       renderLegend();
+      syncModeControls();
       applyScale();
     }
 
@@ -1928,7 +2053,7 @@
       if (!activeTarget) return closeEditor();
       normalizeTypography(editorArea);
       const id = activeTarget.dataset.id;
-      const shouldAutoFitCell = activeTarget.classList.contains("cell") && !state.hidden[id];
+      const shouldAutoFitCell = viewMode === "general" && activeTarget.classList.contains("cell") && !state.hidden[id];
       const fontSize = Math.max(10, Math.min(72, parseInt(fontSizeInput.value, 10) || 24));
       if (activeTarget.classList.contains("cell")) {
         state.cells[id] = sanitizeEditorHtml(editorArea.innerHTML);
@@ -2289,39 +2414,67 @@
       ]);
     }
 
+    function nextFrame() {
+      return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }
+
+    async function captureSheetImage() {
+      await nextFrame();
+      const canvas = await window.html2canvas(sheet, {
+        scale: A3_400_SCALE,
+        width: SHEET_W,
+        height: SHEET_H,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        allowTaint: false,
+        removeContainer: true,
+        logging: false
+      });
+      return canvas.toDataURL("image/png");
+    }
+
     async function exportPdf() {
       setStatus("Рендер PDF...");
       selected.clear();
-      render();
       const oldScale = state.zoom;
+      const oldViewMode = viewMode;
+      const oldDayIndex = currentDayIndex;
       sheet.classList.add("exporting");
       try {
         await ensurePdfLibraries();
         await waitForFonts();
-        const canvas = await window.html2canvas(sheet, {
-          scale: A3_400_SCALE,
-          width: SHEET_W,
-          height: SHEET_H,
-          backgroundColor: "#ffffff",
-          useCORS: true,
-          allowTaint: false,
-          removeContainer: true,
-          logging: false
-        });
-        const img = canvas.toDataURL("image/png");
         const pdf = new window.jspdf.jsPDF({
           orientation: "landscape",
           unit: "mm",
           format: "a3",
           compress: true
         });
-        pdf.addImage(img, "PNG", 0, 0, 420, 297, undefined, "FAST");
-        pdf.save("Doroga-2026-Planner-A3-400dpi.pdf");
+
+        if (viewMode === "days") {
+          for (let index = 0; index < sections.length; index++) {
+            currentDayIndex = index;
+            render();
+            sheet.classList.add("exporting");
+            setStatus(`Рендер PDF: ${index + 1} / ${sections.length}`);
+            const img = await captureSheetImage();
+            if (index > 0) pdf.addPage("a3", "landscape");
+            pdf.addImage(img, "PNG", 0, 0, 420, 297, undefined, "FAST");
+          }
+          pdf.save("Doroga-2026-Planner-days-A3-400dpi.pdf");
+        } else {
+          render();
+          sheet.classList.add("exporting");
+          const img = await captureSheetImage();
+          pdf.addImage(img, "PNG", 0, 0, 420, 297, undefined, "FAST");
+          pdf.save("Doroga-2026-Planner-A3-400dpi.pdf");
+        }
         setStatus("PDF готов");
       } catch (error) {
         console.error(error);
         setStatus("Ошибка PDF");
       } finally {
+        viewMode = oldViewMode;
+        currentDayIndex = oldDayIndex;
         sheet.classList.remove("exporting");
         setZoom(oldScale);
         render();
@@ -2360,6 +2513,21 @@
         }
       };
       reader.readAsText(file);
+    }
+
+    function setViewMode(nextMode) {
+      if (viewMode === nextMode) return;
+      viewMode = nextMode;
+      selected.clear();
+      if (viewMode === "days") currentDayIndex = Math.min(currentDayIndex, sections.length - 1);
+      render();
+      setStatus(viewMode === "days" ? "Режим: по дням" : "Режим: общий");
+    }
+
+    function setDayPage(nextIndex) {
+      currentDayIndex = Math.max(0, Math.min(sections.length - 1, nextIndex));
+      selected.clear();
+      render();
     }
 
     document.querySelectorAll("[data-cmd]").forEach(button => {
@@ -2441,7 +2609,11 @@
     document.getElementById("panBtn").addEventListener("click", () => setPanMode(!panMode));
     document.getElementById("mergeBtn").addEventListener("click", mergeSelected);
     document.getElementById("splitBtn").addEventListener("click", splitSelected);
-    document.getElementById("pdfBtn").addEventListener("click", exportPdf);
+    modeGeneralBtn.addEventListener("click", () => setViewMode("general"));
+    modeDaysBtn.addEventListener("click", () => setViewMode("days"));
+    prevDayBtn.addEventListener("click", () => setDayPage(currentDayIndex - 1));
+    nextDayBtn.addEventListener("click", () => setDayPage(currentDayIndex + 1));
+    pdfBtn.addEventListener("click", exportPdf);
     document.getElementById("saveBtn").addEventListener("click", saveState);
     document.getElementById("loadBtn").addEventListener("click", () => document.getElementById("stateFile").click());
     document.getElementById("stateFile").addEventListener("change", event => {
