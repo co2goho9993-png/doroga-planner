@@ -781,6 +781,32 @@
       transform: skewX(-13deg);
     }
 
+    .editor-align-icon {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      width: 26px;
+      height: 24px;
+    }
+
+    .editor-align-icon::before,
+    .editor-align-icon::after,
+    .editor-align-icon span {
+      content: "";
+      display: block;
+      height: 3px;
+      border-radius: 2px;
+      background: currentColor;
+    }
+
+    .editor-align-icon::before { width: 26px; }
+    .editor-align-icon span { width: 18px; }
+    .editor-align-icon::after { width: 23px; }
+    .editor-align-icon.left { align-items: flex-start; }
+    .editor-align-icon.center { align-items: center; }
+    .editor-align-icon.right { align-items: flex-end; }
+
     .swatch {
       width: 46px;
       height: 46px;
@@ -971,6 +997,9 @@
         <button class="icon-button" data-italic title="Italic"><span class="editor-font-icon italic">i</span></button>
         <button class="icon-button" data-cmd="insertUnorderedList" title="Маркированный список">•</button>
         <button class="icon-button" data-cmd="insertOrderedList" title="Нумерованный список">1.</button>
+        <button class="icon-button" data-align="left" title="Текст влево"><span class="editor-align-icon left"><span></span></span></button>
+        <button class="icon-button" data-align="center" title="Текст по центру"><span class="editor-align-icon center"><span></span></span></button>
+        <button class="icon-button" data-align="right" title="Текст вправо"><span class="editor-align-icon right"><span></span></span></button>
         <button class="icon-button" data-insert="–" title="Среднее тире">–</button>
         <button class="icon-button" data-insert="—" title="Длинное тире">—</button>
         <button class="icon-button" data-insert="«»" title="Кавычки елочкой">«»</button>
@@ -1048,7 +1077,8 @@
       hidden: {},
       bg: {},
       fontSize: {},
-      groupFontSize: {}
+      groupFontSize: {},
+      align: {}
     };
 
     const sheet = document.getElementById("sheet");
@@ -1101,6 +1131,20 @@
       el.style.top = `${y}px`;
       el.style.width = `${w}px`;
       el.style.height = `${h}px`;
+    }
+
+    function validTextAlign(value) {
+      return ["left", "center", "right"].includes(value) ? value : "";
+    }
+
+    function elementTextAlign(el) {
+      const id = el.dataset.id;
+      return validTextAlign(state.align?.[id]) || getComputedStyle(el).textAlign || "left";
+    }
+
+    function applyTextAlign(el) {
+      const align = validTextAlign(state.align?.[el.dataset.id]);
+      if (align) el.style.textAlign = align;
     }
 
     function xForCol(col) {
@@ -1423,6 +1467,16 @@
       document.querySelectorAll("[data-italic]").forEach(button => {
         button.classList.toggle("active", currentItalicState());
       });
+      document.querySelectorAll("[data-align]").forEach(button => {
+        button.classList.toggle("active", button.dataset.align === editorArea.dataset.align);
+      });
+    }
+
+    function setEditorAlign(align) {
+      const cleanAlign = validTextAlign(align) || "left";
+      editorArea.dataset.align = cleanAlign;
+      editorArea.style.textAlign = cleanAlign;
+      updateFontButtons();
     }
 
     function sanitizeVenueHtml(html) {
@@ -1765,6 +1819,7 @@
       el.dataset.label = label;
       styleBox(el, x, y, w, h);
       el.innerHTML = flowHtml(state.text[id] ?? html);
+      applyTextAlign(el);
       if (fontSize) {
         const baseFontSize = state.fontSize[id] || fontSize;
         el.style.fontSize = `${options.fontScale ? scaledFontSize(baseFontSize, options.fontScale) : baseFontSize}px`;
@@ -1804,6 +1859,7 @@
       const hasContent = Boolean(cellHtml.trim());
       el.style.fontSize = `${options.fontScale && hasContent ? scaledFontSize(baseFontSize, options.fontScale, 72) : baseFontSize}px`;
       el.innerHTML = flowHtml(cellHtml);
+      applyTextAlign(el);
       el.addEventListener("click", event => {
         event.stopPropagation();
         if (selectMode || event.ctrlKey || event.shiftKey) {
@@ -1828,6 +1884,7 @@
       const baseFontSize = state.groupFontSize.venues || state.fontSize[id] || 30;
       el.style.fontSize = `${options.fontScale ? scaledFontSize(baseFontSize, options.fontScale, 72) : baseFontSize}px`;
       el.innerHTML = sanitizeVenueHtml(state.text[id] ?? htmlEscape(text));
+      applyTextAlign(el);
       el.addEventListener("click", event => {
         event.stopPropagation();
         openEditor(el);
@@ -1894,6 +1951,7 @@
         const baseFontSize = state.groupFontSize.timeCells || state.fontSize[el.dataset.id] || 31;
         el.style.fontSize = `${baseFontSize}px`;
         el.innerHTML = flowHtml(state.text[el.dataset.id] ?? htmlEscape(label));
+        applyTextAlign(el);
         el.addEventListener("click", event => {
           event.stopPropagation();
           openEditor(el);
@@ -1914,6 +1972,7 @@
       stripe.dataset.baseFontSize = baseDateFontSize;
       stripe.style.fontSize = `${baseDateFontSize}px`;
       stripe.innerHTML = dateMarkupFromHtml(state.text[stripe.dataset.id], section.date);
+      applyTextAlign(stripe);
       stripe.addEventListener("click", event => {
         event.stopPropagation();
         openEditor(stripe);
@@ -2033,6 +2092,7 @@
       savedEditorRange = null;
       editorTitle.textContent = el.dataset.label || el.dataset.id || "Редактирование";
       editorArea.innerHTML = editorHtmlFromElement(el);
+      setEditorAlign(elementTextAlign(el));
       fontSizeInput.value = elementFontSize(el, parseInt(el.style.fontSize, 10) || 24);
       modal.classList.add("open");
       setTimeout(() => {
@@ -2046,6 +2106,8 @@
       activeTarget = null;
       savedEditorRange = null;
       editorArea.innerHTML = "";
+      editorArea.style.textAlign = "";
+      delete editorArea.dataset.align;
       updateFontButtons();
     }
 
@@ -2055,6 +2117,8 @@
       const id = activeTarget.dataset.id;
       const shouldAutoFitCell = viewMode === "general" && activeTarget.classList.contains("cell") && !state.hidden[id];
       const fontSize = Math.max(10, Math.min(72, parseInt(fontSizeInput.value, 10) || 24));
+      const align = validTextAlign(editorArea.dataset.align) || "left";
+      state.align[id] = align;
       if (activeTarget.classList.contains("cell")) {
         state.cells[id] = sanitizeEditorHtml(editorArea.innerHTML);
         state.bg[id] = activeTarget.dataset.nextBg || state.bg[id] || activeTarget.style.backgroundColor || "#ffffff";
@@ -2497,6 +2561,7 @@
         try {
           const data = JSON.parse(reader.result);
           Object.assign(state, data.state || {});
+          state.align = state.align && typeof state.align === "object" ? state.align : {};
           if (Array.isArray(data.sections)) {
             data.sections.forEach(saved => {
               const section = sections.find(s => s.id === saved.id);
@@ -2553,6 +2618,15 @@
       button.addEventListener("click", () => {
         applyInlineClass("font-italic");
         updateFontButtons();
+      });
+    });
+
+    document.querySelectorAll("[data-align]").forEach(button => {
+      button.addEventListener("mousedown", event => event.preventDefault());
+      button.addEventListener("click", () => {
+        setEditorAlign(button.dataset.align);
+        editorArea.focus();
+        restoreEditorSelection();
       });
     });
 
