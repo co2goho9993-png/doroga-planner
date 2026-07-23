@@ -496,16 +496,20 @@
 
     .venue-title {
       display: block;
+      width: 100%;
       font-family: "PF Din Text Comp Pro", Arial, sans-serif;
       font-weight: 500;
       line-height: inherit;
+      white-space: normal;
     }
 
     .venue-note {
       display: block;
+      width: 100%;
       font-family: "PF Din Text Comp Pro", Arial, sans-serif;
       font-weight: 400;
       line-height: inherit;
+      white-space: normal;
     }
 
     .cell {
@@ -1078,7 +1082,9 @@
       bg: {},
       fontSize: {},
       groupFontSize: {},
-      align: {}
+      align: {},
+      dayRowHeights: {},
+      dayColWidths: {}
     };
 
     const sheet = document.getElementById("sheet");
@@ -1149,7 +1155,8 @@
 
     function xForCol(col) {
       let x = TABLE_X;
-      for (let i = 0; i < col; i++) x += state.colWidths[i] + GAP_X;
+      const colWidths = activeColWidths();
+      for (let i = 0; i < col; i++) x += colWidths[i] + GAP_X;
       return x;
     }
 
@@ -1169,15 +1176,37 @@
       return section.rowHeights.reduce((total, height) => total + height, 0) + GAP_Y * Math.max(0, section.rowHeights.length - 1);
     }
 
-    function dailyRowHeights(section) {
+    function proportionalDailyRowHeights(section) {
       const rowCount = section.rowHeights.length;
       const available = DAY_TABLE_BOTTOM - DAY_BODY_Y - GAP_Y * Math.max(0, rowCount - 1);
       const sourceTotal = section.rowHeights.reduce((total, height) => total + height, 0) || rowCount;
       return section.rowHeights.map(height => Math.max(MIN_ROW, available * height / sourceTotal));
     }
 
+    function ensureDailyRowHeights(section) {
+      state.dayRowHeights = state.dayRowHeights && typeof state.dayRowHeights === "object" ? state.dayRowHeights : {};
+      const stored = state.dayRowHeights[section.id];
+      if (Array.isArray(stored) && stored.length === section.rowHeights.length) return stored;
+      const rowHeights = proportionalDailyRowHeights(section);
+      state.dayRowHeights[section.id] = rowHeights;
+      return rowHeights;
+    }
+
+    function ensureDailyColWidths(sectionId = sections[currentDayIndex]?.id) {
+      state.dayColWidths = state.dayColWidths && typeof state.dayColWidths === "object" ? state.dayColWidths : {};
+      const stored = state.dayColWidths[sectionId];
+      if (Array.isArray(stored) && stored.length === state.colWidths.length) return stored;
+      const colWidths = state.colWidths.slice();
+      state.dayColWidths[sectionId] = colWidths;
+      return colWidths;
+    }
+
+    function activeColWidths() {
+      return viewMode === "days" ? ensureDailyColWidths() : state.colWidths;
+    }
+
     function dailySectionLayout(section) {
-      const rowHeights = dailyRowHeights(section);
+      const rowHeights = ensureDailyRowHeights(section);
       return {
         ...section,
         headerY: DAY_HEADER_Y,
@@ -1322,6 +1351,16 @@
       return holder.textContent;
     }
 
+    function normalizeBreakHtml(html) {
+      return String(html)
+        .replace(/<br\s*\/?>/gi, "<br>")
+        .replace(/<(div|p)\b[^>]*>/gi, "<br>")
+        .replace(/<\/(div|p)>/gi, "")
+        .replace(/\r?\n/g, "<br>")
+        .replace(/^(?:\s*<br>\s*)+/i, "")
+        .replace(/(?:\s*<br>\s*)+$/i, "");
+    }
+
     function sanitizeEditorHtml(html) {
       const template = document.createElement("template");
       template.innerHTML = html;
@@ -1347,7 +1386,7 @@
           el.replaceWith(replacement);
         }
       });
-      return template.innerHTML;
+      return normalizeBreakHtml(template.innerHTML);
     }
 
     function hasExplicitFontMarkup(html) {
@@ -1480,33 +1519,7 @@
     }
 
     function sanitizeVenueHtml(html) {
-      if (hasExplicitFontMarkup(html)) {
-        const preparedHtml = String(html)
-          .replace(/class="venue-title"/g, 'class="font-medium"')
-          .replace(/class="venue-note"/g, 'class="font-regular"');
-        return sanitizeEditorHtml(preparedHtml)
-          .replace(/<br\s*\/?>/gi, "<br>")
-          .replace(/<\/(div|p)>/gi, "<br>");
-      }
-      let text = normalizeTypographyText(textFromEditorHtml(html))
-        .replace(/[ \t]+/g, " ")
-        .replace(/[ \t]*\n[ \t]*/g, "\n")
-        .replace(/\n{2,}/g, "\n")
-        .trim();
-      text = text.replace(/^Выставочный\s+павильон$/i, "Выставочный\nпавильон");
-      text = text.replace(/^(Зал\s+[^\n(]+)\s+(\([^)]*\))$/i, "$1\n$2");
-      text = text.replace(/^(Зал\s+Краснодар)\s*(\([^)]*\))$/i, "$1\n$2");
-      text = text.replace(/^(Зал\s+Сочи)\s*(\([^)]*\))$/i, "$1\n$2");
-      text = text.replace(/^(Зал\s+Анапа)\s*(\([^)]*\))$/i, "$1\n$2");
-      text = text.replace(/^(Зал\s+Сириус)\s*(\([^)]*\))$/i, "$1\n$2");
-      text = text.replace(/^(Зал\s+Дагомыс)\s*(\([^)]*\))$/i, "$1\n$2");
-      const lines = text.split("\n");
-      const lastLine = lines.at(-1) || "";
-      if (lines.length > 1 && /^\([^)]*\)$/.test(lastLine)) {
-        const title = lines.slice(0, -1).join("\n");
-        return `<span class="venue-title">${htmlEscape(title)}</span><span class="venue-note">${htmlEscape(lastLine)}</span>`;
-      }
-      return `<span class="venue-title">${htmlEscape(text)}</span>`;
+      return sanitizeEditorHtml(html);
     }
 
     function fitElementsInside(elements, minSize = 18) {
@@ -1818,7 +1831,7 @@
       el.dataset.id = id;
       el.dataset.label = label;
       styleBox(el, x, y, w, h);
-      el.innerHTML = flowHtml(state.text[id] ?? html);
+      el.innerHTML = flowHtml(normalizeBreakHtml(state.text[id] ?? html));
       applyTextAlign(el);
       if (fontSize) {
         const baseFontSize = state.fontSize[id] || fontSize;
@@ -1833,6 +1846,7 @@
     }
 
     function makeCell(id, section, row, col, options = {}) {
+      const colWidths = activeColWidths();
       const el = document.createElement("div");
       el.className = "cell";
       el.dataset.id = id;
@@ -1842,12 +1856,12 @@
       const merge = state.merged[id];
       let x = xForCol(col);
       let y = yForRow(section, row);
-      let w = state.colWidths[col];
+      let w = colWidths[col];
       let h = section.rowHeights[row];
       if (merge) {
         w = 0;
         h = 0;
-        for (let c = col; c < col + merge.cols; c++) w += state.colWidths[c] + (c > col ? GAP_X : 0);
+        for (let c = col; c < col + merge.cols; c++) w += colWidths[c] + (c > col ? GAP_X : 0);
         for (let r = row; r < row + merge.rows; r++) h += section.rowHeights[r] + (r > row ? GAP_Y : 0);
       }
       styleBox(el, x, y, w, h);
@@ -1855,8 +1869,8 @@
       if (selected.has(id)) el.classList.add("selected");
       el.style.background = state.bg[id] || "#ffffff";
       const baseFontSize = state.fontSize[id] || 24;
-      const cellHtml = state.cells[id] || "";
-      const hasContent = Boolean(cellHtml.trim());
+      const cellHtml = normalizeBreakHtml(state.cells[id] || "");
+      const hasContent = Boolean(textFromEditorHtml(cellHtml).trim());
       el.style.fontSize = `${options.fontScale && hasContent ? scaledFontSize(baseFontSize, options.fontScale, 72) : baseFontSize}px`;
       el.innerHTML = flowHtml(cellHtml);
       applyTextAlign(el);
@@ -1883,7 +1897,7 @@
       styleBox(el, VENUE_X, y + 0.1, VENUE_W, section.rowHeights[row]);
       const baseFontSize = state.groupFontSize.venues || state.fontSize[id] || 30;
       el.style.fontSize = `${options.fontScale ? scaledFontSize(baseFontSize, options.fontScale, 72) : baseFontSize}px`;
-      el.innerHTML = sanitizeVenueHtml(state.text[id] ?? htmlEscape(text));
+      el.innerHTML = flowHtml(sanitizeVenueHtml(state.text[id] ?? htmlEscape(text)));
       applyTextAlign(el);
       el.addEventListener("click", event => {
         event.stopPropagation();
@@ -1937,6 +1951,7 @@
     }
 
     function renderTimeHeader(section, options = {}) {
+      const colWidths = activeColWidths();
       const header = document.createElement("div");
       header.className = "time-header";
       header.style.top = `${section.headerY}px`;
@@ -1947,7 +1962,7 @@
         el.className = "time-cell";
         el.dataset.id = `${section.id}-time-${col}`;
         el.dataset.label = "Время";
-        styleBox(el, xForCol(col), section.headerY, state.colWidths[col], 109);
+        styleBox(el, xForCol(col), section.headerY, colWidths[col], 109);
         const baseFontSize = state.groupFontSize.timeCells || state.fontSize[el.dataset.id] || 31;
         el.style.fontSize = `${baseFontSize}px`;
         el.innerHTML = flowHtml(state.text[el.dataset.id] ?? htmlEscape(label));
@@ -1962,6 +1977,7 @@
 
     function renderSection(section, options = {}) {
       const allowResize = options.resizable !== false;
+      const colWidths = activeColWidths();
       renderTimeHeader(section, options);
       const stripe = document.createElement("div");
       stripe.className = "date-stripe";
@@ -1981,7 +1997,7 @@
 
       section.rowHeights.forEach((_, row) => {
         makeVenue(`${section.id}-venue-${row}`, section, row, section.venue[row] || "");
-        for (let col = 0; col < state.colWidths.length; col++) {
+        for (let col = 0; col < colWidths.length; col++) {
           makeCell(`${section.id}-${row}-${col}`, section, row, col, {
             fontScale: options.daily ? 1.55 : 1
           });
@@ -1990,17 +2006,18 @@
 
       if (!allowResize) return;
 
-      for (let col = 0; col < state.colWidths.length - 1; col++) {
+      for (let col = 0; col < colWidths.length - 1; col++) {
         const handle = document.createElement("div");
         handle.className = "resize-col";
         handle.dataset.col = col;
-        styleBox(handle, xForCol(col) + state.colWidths[col] + GAP_X / 2, section.headerY, 18, section.stripeY + section.stripeH - section.headerY);
+        styleBox(handle, xForCol(col) + colWidths[col] + GAP_X / 2, section.headerY, 18, section.stripeY + section.stripeH - section.headerY);
         handle.addEventListener("pointerdown", startColResize);
         sheet.appendChild(handle);
       }
 
-      const sectionIndex = sections.indexOf(section);
-      if (sectionIndex > 0) {
+      const sectionIndex = options.sectionIndex ?? sections.indexOf(section);
+      const singleSection = Boolean(options.singleSection);
+      if (!singleSection && sectionIndex > 0) {
         const topHandle = document.createElement("div");
         topHandle.className = "resize-row";
         topHandle.dataset.section = section.id;
@@ -2018,8 +2035,8 @@
         handle.dataset.section = section.id;
         handle.dataset.row = row;
         const nextSection = sections[sectionIndex + 1];
-        handle.dataset.edge = row === section.rowHeights.length - 1 && nextSection ? "section-boundary" : row === section.rowHeights.length - 1 ? "bottom" : "between";
-        if (row === section.rowHeights.length - 1 && nextSection) handle.dataset.boundarySection = nextSection.id;
+        handle.dataset.edge = !singleSection && row === section.rowHeights.length - 1 && nextSection ? "section-boundary" : row === section.rowHeights.length - 1 ? "bottom" : "between";
+        if (!singleSection && row === section.rowHeights.length - 1 && nextSection) handle.dataset.boundarySection = nextSection.id;
         styleBox(handle, TABLE_X, yForRow(section, row) + section.rowHeights[row] + GAP_Y / 2, TABLE_W, 18);
         handle.addEventListener("pointerdown", startRowResize);
         sheet.appendChild(handle);
@@ -2063,7 +2080,7 @@
 
     function renderDailyPage() {
       const section = dailySectionLayout(sections[currentDayIndex]);
-      renderSection(section, { daily: true, resizable: false });
+      renderSection(section, { daily: true, resizable: true, singleSection: true, sectionIndex: currentDayIndex });
     }
 
     function render() {
@@ -2113,7 +2130,6 @@
 
     function applyEditor() {
       if (!activeTarget) return closeEditor();
-      normalizeTypography(editorArea);
       const id = activeTarget.dataset.id;
       const shouldAutoFitCell = viewMode === "general" && activeTarget.classList.contains("cell") && !state.hidden[id];
       const fontSize = Math.max(10, Math.min(72, parseInt(fontSizeInput.value, 10) || 24));
@@ -2210,17 +2226,18 @@
       event.stopPropagation();
       event.preventDefault();
       const col = Number(event.currentTarget.dataset.col);
+      const colWidths = activeColWidths();
       const startX = event.clientX;
-      const startLeft = state.colWidths[col];
-      const startRight = state.colWidths[col + 1];
+      const startLeft = colWidths[col];
+      const startRight = colWidths[col + 1];
       const scale = Number(getComputedStyle(document.documentElement).getPropertyValue("--scale")) || 1;
       const move = e => {
         const dx = (e.clientX - startX) / scale;
         const left = Math.max(MIN_COL, startLeft + dx);
         const right = Math.max(MIN_COL, startRight - dx);
         const correction = startLeft + startRight - left - right;
-        state.colWidths[col] = left + correction / 2;
-        state.colWidths[col + 1] = right + correction / 2;
+        colWidths[col] = left + correction / 2;
+        colWidths[col + 1] = right + correction / 2;
         render();
       };
       const up = () => {
@@ -2235,7 +2252,16 @@
       if (event.pointerType === "touch" || event.button !== 0) return;
       event.stopPropagation();
       event.preventDefault();
-      const section = sections.find(s => s.id === event.currentTarget.dataset.section);
+      const baseSection = sections.find(s => s.id === event.currentTarget.dataset.section);
+      const section = viewMode === "days" ? { ...baseSection, rowHeights: ensureDailyRowHeights(baseSection) } : baseSection;
+      const setRowHeights = (targetSection, heights) => {
+        if (viewMode === "days") {
+          state.dayRowHeights[targetSection.id] = heights;
+        } else {
+          targetSection.rowHeights = heights;
+        }
+        targetSection.rowHeights = heights;
+      };
       const row = Number(event.currentTarget.dataset.row);
       const startY = event.clientY;
       const startHeights = section.rowHeights.slice();
@@ -2273,7 +2299,7 @@
             nextHeights[index] = startHeights[index] + donorDelta * (rowSpare / spare || 1 / donorIndexes.length);
           });
         }
-        section.rowHeights = nextHeights.map(height => Math.max(MIN_ROW, height));
+        setRowHeights(section, nextHeights.map(height => Math.max(MIN_ROW, height)));
         return true;
       };
       const move = e => {
@@ -2283,10 +2309,12 @@
           const maxDown = Math.max(0, boundaryCurrHeights[0] - MIN_ROW);
           const maxUp = Math.max(0, boundaryPrevHeights[prevLast] - MIN_ROW);
           const applied = Math.max(-maxUp, Math.min(maxDown, dy));
-          boundaryPrev.rowHeights = boundaryPrevHeights.slice();
-          boundaryCurr.rowHeights = boundaryCurrHeights.slice();
-          boundaryPrev.rowHeights[prevLast] = boundaryPrevHeights[prevLast] + applied;
-          boundaryCurr.rowHeights[0] = boundaryCurrHeights[0] - applied;
+          const nextPrevHeights = boundaryPrevHeights.slice();
+          const nextCurrHeights = boundaryCurrHeights.slice();
+          nextPrevHeights[prevLast] = boundaryPrevHeights[prevLast] + applied;
+          nextCurrHeights[0] = boundaryCurrHeights[0] - applied;
+          setRowHeights(boundaryPrev, nextPrevHeights);
+          setRowHeights(boundaryCurr, nextCurrHeights);
           render();
           return;
         }
@@ -2303,8 +2331,10 @@
         const top = Math.max(MIN_ROW, startTop + dy);
         const bottom = Math.max(MIN_ROW, startBottom - dy);
         const correction = startTop + startBottom - top - bottom;
-        section.rowHeights[row] = top + correction / 2;
-        section.rowHeights[row + 1] = bottom + correction / 2;
+        const nextHeights = section.rowHeights.slice();
+        nextHeights[row] = top + correction / 2;
+        nextHeights[row + 1] = bottom + correction / 2;
+        setRowHeights(section, nextHeights);
         render();
       };
       const up = () => {
@@ -2562,6 +2592,8 @@
           const data = JSON.parse(reader.result);
           Object.assign(state, data.state || {});
           state.align = state.align && typeof state.align === "object" ? state.align : {};
+          state.dayRowHeights = state.dayRowHeights && typeof state.dayRowHeights === "object" ? state.dayRowHeights : {};
+          state.dayColWidths = state.dayColWidths && typeof state.dayColWidths === "object" ? state.dayColWidths : {};
           if (Array.isArray(data.sections)) {
             data.sections.forEach(saved => {
               const section = sections.find(s => s.id === saved.id);
